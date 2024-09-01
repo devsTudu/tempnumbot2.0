@@ -45,7 +45,7 @@ class Commands:
         return services.send_page(self.user_id, 1)
 
     def checkbal(self):
-        bal = reception_api (self.user_id)
+        bal = reception_api.see_balance(self.user_id)
         response = f"Your Balance is {bal} "
         return send_buttons(self.update,response)
 

@@ -22,7 +22,7 @@ def showAvailableServer(service_code, update: Message):
 def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price,
                          s_actCode,server):
     #user_db.record_order(chat_id, s_name, s_price)
-    reception_api.add_transactions(chat_id,s_name,s_price)
+    reception_api.add_transactions(chat_id,s_name,-s_price)
     response = f"here is your `{s_phone}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
