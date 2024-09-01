@@ -122,14 +122,14 @@ class api_point:
     def __init__(self) -> None:
         try:
             if __name__ == "__main__":
-                self.user_db = UserDatabase(
-                    "postgresql://projects_owner:USBeqsY8DfM4@ep-long-snowflake-a5n1h8yr.us-east-2.aws.neon.tech/projects?sslmode=require"
-                )
+                postgreurl = input("Enter the URL for the Datbase")
             else:
-                self.user_db = UserDatabase(getenv("POSTGRESQL_DB"))
+                postgreurl = getenv("POSTGRESQL_DB")
         except BaseException as e:
             log(1, "Error Connecting with database")
             raise e
+        finally:
+            self.user_db = UserDatabase(postgreurl)
 
     def see_balance(self, user_id) -> float:
         return float(self.user_db.get_user_balance(user_id))
