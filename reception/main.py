@@ -1,4 +1,3 @@
-from ctypes import FormatError
 from logging import log
 from os import getenv
 from dotenv import load_dotenv
