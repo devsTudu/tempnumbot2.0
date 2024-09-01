@@ -3,8 +3,9 @@ import json
 
 from telegram.bot import bot, logger
 from telegram.models import Message,CallbackQuery
-from reception.databaseManager import user_db
 
+
+from reception.main import reception_api
 
 #Variable Declaration
 templates_dir = "templates/"
@@ -16,8 +17,7 @@ def loadTemplate(filename):
 
 class BalanceHandler:
     """Handles the balance of users, and also helps in recharge"""
-    def __init__(self,user_db=user_db,image_file='qr.jpg') -> None:
-        self.user_db = user_db
+    def __init__(self,image_file='qr.jpg') -> None:
         if path.isfile(image_file):
             self.img = image_file
         else:
@@ -30,8 +30,8 @@ class BalanceHandler:
 
     def checkUTR(self, message_id, user_id, utr: int):
         if utr == 12345:
-            self.user_db.recharge_balance(user_id, 10)
-            response = f"Sucess, Your new balance is {self.user_db.get_user_balance(user_id)}"
+            reception_api.add_balance(user_id=user_id,amount=10)
+            response = f"Sucess, Your new balance is {reception_api.see_balance(user_id=user_id)}"
         else:
             response = """UTR Number did not match\nPlease check it again, or wait for some time till we receive it"""
         payload = {

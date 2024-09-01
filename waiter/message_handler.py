@@ -1,9 +1,9 @@
 from .helper import send_buttons,services,BalanceHandler, loadTemplate
 from .helper_phone import showAvailableServer
 from telegram.bot import bot,logger
-from reception.databaseManager import user_db
 from .cook import serviceOps
 from telegram.models import Message
+from reception.main import reception_api
 
 #Command Handler
 class Commands:
@@ -45,7 +45,7 @@ class Commands:
         return services.send_page(self.user_id, 1)
 
     def checkbal(self):
-        bal = user_db.get_user_balance(self.user_id)
+        bal = reception_api (self.user_id)
         response = f"Your Balance is {bal} "
         return send_buttons(self.update,response)
 
@@ -54,9 +54,8 @@ class Commands:
 
     def checkhistory(self):
         response = " Check History here\n"
-        txn = user_db.get_user_transactions(self.user_id)
-        response += "\n".join("{:<4} {:<10}".format(i[-1], i[2]) for i in txn)
-        return send_buttons(self.update,response)
+        txn = reception_api.see_transactions(user_id=self.user_id)
+        return send_buttons(self.update,response+txn)
     
     def getfavlist(self):
         return send_buttons(self.update,"Your Favourite List appears here")

@@ -1,8 +1,10 @@
 from .helper_phone import otpUpdateQuery,requestNumber
 from telegram.models import CallbackQuery
-from .helper import default_query_update, services, BalanceHandler, user_db,loadTemplate
+from .helper import default_query_update, services, BalanceHandler,loadTemplate
 from .cook import serviceOps
 from telegram.bot import bot, logger
+from reception.main import reception_api
+
 
 def answer_to(request):
     try:
@@ -19,14 +21,14 @@ def answer_to(request):
     elif q in services.pages:
         return services.update_page(query, q)
     elif q == "checkBalance":
-        bal = user_db.get_user_balance(user_id=user_id)
+        bal = reception_api.see_balance(user_id=user_id)
         response = f"Your Balance is {bal} "
     elif q == "recharge":
         return BalanceHandler().openPortal(user_id)
     elif q == "checkHistory":
         response = " Check History here\n"
-        txn = user_db.get_user_transactions(user_id)
-        response += "\n".join("{:<4} {:<10}".format(i[-1], i[2]) for i in txn)
+        txn = reception_api.see_transactions(user_id)
+        response+=txn
     #Checking for OTP and Canceling Queries
     elif 'buy' == q[:3]:
         _,server,service_name,provider = q.split('_')
@@ -54,7 +56,7 @@ def answer_to(request):
         x = serviceOps.cancelPhone(server,act_code)
         if x:
             response = f"The {sname} is deactivated, and money refunded"
-            user_db.record_order(user_id, f"{sname} CANCELED", -float(price))
+            reception_api.add_transactions(user_id, f"{sname} CANCELED", -float(price))
             logger.log(5, f"{user_id} cancelled {sname}")
         else:
             logger.error(

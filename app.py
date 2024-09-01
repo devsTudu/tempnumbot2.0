@@ -1,14 +1,15 @@
 #Waiter End Point that interacts with Telegram Bot API
 
+from secrets_handler import check_required_secrets
+check_required_secrets()
+
 from flask import Flask, request, Response
 from waiter import main as waiter
 from telegram.bot import logger
-from secrets_handler import check_required_secrets
 
 import threading
 
 app = Flask(__name__)
-check_required_secrets()
 
 @app.route('/')
 def index():

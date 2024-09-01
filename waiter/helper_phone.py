@@ -1,8 +1,8 @@
+from reception.main import reception_api
 from telegram.models import Message
 from .cook import serviceOps
 from .helper import send_buttons, BalanceHandler
 from telegram.bot import bot, logger
-from reception.databaseManager import user_db
 import json
 
 
@@ -21,7 +21,8 @@ def showAvailableServer(service_code, update: Message):
 
 def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price,
                          s_actCode,server):
-    user_db.record_order(chat_id, s_name, s_price)
+    #user_db.record_order(chat_id, s_name, s_price)
+    reception_api.add_transactions(chat_id,s_name,s_price)
     response = f"here is your `{s_phone}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
@@ -44,7 +45,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
     s_price = serviceOps.fetchPrice(server=server,
                                    service_name=service_name,
                                    provider=provider)
-    user_balance = user_db.get_user_balance(user_id=chat_id)
+    user_balance = reception_api.see_balance(user_id=chat_id)
     if int(user_balance) < int(s_price):
         resp = f"Sorry, {user_firstName} your balance is {user_balance}, and the price for this service is {s_price}"
         bot.send_message(chat_id, resp)
@@ -77,7 +78,8 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
     if otp == -1:
         # OTP is cancelled or Expired
         response += "\n Got Canceled or Expired"
-        user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
+        #user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
+        reception_api.add_transactions(user_id,f"{s_name} CANCELED", -int(price))
         response += "\n And money refunded."
         payload = {
             'chat_id': user_id,
