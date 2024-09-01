@@ -1,6 +1,6 @@
 from logging import log
-from models import SERVERS, phoneDetails
-from helper import api_requests
+from .models import SERVERS, phoneDetails
+from .helper import api_requests
 import json
 
 req = api_requests()
