@@ -161,10 +161,8 @@ class api_point:
                 "{:<4} {:<10}".format(i.amount_credited, i.transaction_detail)
                 for i in x
             )
-        except FormatError as f:
-            log(2, "Error in format of data")
-        except ExceptionContext as e:
-            log(2, e)
+        except Exception as e:
+            log(2, f"Error while fetching transactions for {user_id}")
 
 
 def test_debasish():
