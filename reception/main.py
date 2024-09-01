@@ -6,13 +6,13 @@ import datetime
 from sqlalchemy import (
     create_engine,
     Column,
-    Integer,
+    Integer,BigInteger,
     Float,
     Date,
     Text,
     TIMESTAMP,
     UniqueConstraint,
-    ForeignKey,
+    ForeignKey
 )
 from sqlalchemy.engine import ExceptionContext
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -24,7 +24,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "user_info"
 
-    userid = Column(Integer, primary_key=True)
+    userid = Column(BigInteger, primary_key=True)
     balance = Column(Float, default=0.0)
     datejoined = Column(Date, default=datetime.date.today())
 
@@ -121,7 +121,7 @@ class api_point:
     def __init__(self) -> None:
         try:
             if __name__ == "__main__":
-                postgreurl = input("Enter the URL for the Datbase")
+                postgreurl = "postgresql://projects_owner:USBeqsY8DfM4@ep-long-snowflake-a5n1h8yr.us-east-2.aws.neon.tech/projects?sslmode=require"#input("Enter the URL for the Datbase")
             else:
                 postgreurl = getenv("POSTGRESQL_DB")
         except BaseException as e:
@@ -141,15 +141,15 @@ class api_point:
             log(2, f"Unable to recharge {user_id} in the Database")
             return False
 
-    def add_transactions(self, user_id, transaction_detail, amount_credited):
+    def add_transactions(self, user_id, transaction_detail, cost):
         try:
-            self.user_db.record_transaction(
-                user_id, transaction_detail, amount_credited
+            self.user_db.record_order(
+                user_id, transaction_detail, cost
             )
             return True
         except:
             log(
-                2, f"Unable to record txns {user_id,transaction_detail,amount_credited}"
+                2, f"Unable to record txns {user_id,transaction_detail,cost}"
             )
             return False
 
@@ -163,10 +163,13 @@ class api_point:
         except Exception as e:
             log(2, f"Error while fetching transactions for {user_id}")
 
+reception_api = api_point()
 
+
+# Test Case
 def test_debasish():
-    myid = 890642031
-    reception_1 = api_point()
+    myid = 8906421312
+    reception_1 = reception_api
 
     # Check Recharge
     old_bal = reception_1.see_balance(myid)
@@ -175,12 +178,12 @@ def test_debasish():
     assert old_bal + 10 == new_bal
 
     # Check Transactions
-    reception_1.add_transactions(myid, "A Test Transaction", -12)
+    reception_1.add_transactions(myid, "A Test Transaction", 12)
     new_bal = reception_1.see_balance(myid)
     assert new_bal == old_bal - 2
     print(reception_1.see_transactions(myid))
 
-reception_api = api_point()
+
 
 if __name__=='__main__':
     test_debasish()
