@@ -54,7 +54,7 @@ class Commands:
 
     def checkhistory(self):
         response = " Check History here\n"
-        txn = reception_api.see_transactions(user_id=self.user_id)
+        txn = ''+reception_api.see_transactions(user_id=self.user_id)
         return send_buttons(self.update,response+txn)
     
     def getfavlist(self):

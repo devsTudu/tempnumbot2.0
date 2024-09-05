@@ -160,6 +160,7 @@ class api_point:
             )
         except Exception as e:
             log(2, f"Error while fetching transactions for {user_id}")
+            return "Error Fetching Data"
 
 reception_api = api_point()
 

@@ -61,8 +61,13 @@ def answer_to(request):
         else:
             logger.error(
                 f"{sname} couldnot deactivate, no refund yet {user_id}")
-            response = "There was issue with deactivation and refund\nPlease get back to support team"
-            return bot.send_message(user_id,response)
+            response = {
+                "callback_query_id": query.callback_query_id,
+                'text':"There was issue with deactivation"
+                }
+            
+            return bot.send_request('answerCallbackQuery',response)
+            # return bot.send_message(user_id,response)
     elif "againOTP" in q:
         return bot.send_message(user_id,"Requesting more otp is not allowed now.")
         
