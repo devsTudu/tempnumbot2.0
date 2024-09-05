@@ -2,10 +2,12 @@ import datetime
 from telegram.bot import logger
 from telegram.models import phoneNumberFlow
 from os import getenv, path
-from cook import main
+
+from dotenv import load_dotenv
 
 from requests import get
 
+load_dotenv()
 API_KEY = getenv("COOK_API_TOKEN")
 COOK_URL = "https://fastapi-tempnumbot.onrender.com"
 MENU_LIST = "menu.txt"
@@ -26,8 +28,17 @@ class cookAPI:
     @classmethod
     def get_server_list(cls,service_name)->list[dict]:
         """Returns the json list of all the servers, available for the service_name, else returns none"""
-        resp = main.get_price_from_name(servicename=service_name)
-        return resp
+        url = f"{COOK_URL}/getPrices"
+        params = {'servicename':service_name}
+    
+        response = get(url,params=params,headers=cls.headers)
+        if response.status_code == 200:
+            reply :list[dict] = response.json()['offers']
+            return reply
+        else:
+            logger.error(f"Error fetching offers for {service_name},returned {response.text}")
+            return []
+            
 
     @classmethod
     def get_phone_no(cls,server,service_name,provider):

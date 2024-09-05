@@ -1,6 +1,6 @@
 from logging import log
-from .models import SERVERS, phoneDetails
-from .helper import api_requests
+#from models import SERVERS, phoneDetails
+from helper import api_requests
 import json
 
 req = api_requests()
@@ -12,7 +12,7 @@ def get_price_from_name(servicename:str):
         resp = "Error fetching prices"
     return resp
 
-def get_phone_number(server:SERVERS,
+def get_phone_number(server,
                      service_name: str = None,
                      provider: str = 'Any',
                      user: str = "123456789"):
@@ -46,4 +46,8 @@ def cancel_phone(server: SERVERS, access_id: str):
     resp = req.cancelPhone(serverName=server,
                                             access_id=access_id)
     return resp
+
+
+if __name__=='__main__':
+    print(get_price_from_name('Telegram'))
 

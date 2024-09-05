@@ -33,7 +33,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     transaction_id = Column(Integer, primary_key=True)
-    userid = Column(Integer, ForeignKey("user_info.userid"))
+    userid = Column(BigInteger, ForeignKey("user_info.userid"))
     transaction_detail = Column(Text)
     transaction_date = Column(TIMESTAMP, default=datetime.datetime.now())
     amount_credited = Column(Float)
@@ -119,11 +119,8 @@ class UserDatabase:
 
 class api_point:
     def __init__(self) -> None:
-        try:
-            if __name__ == "__main__":
-                postgreurl = "postgresql://projects_owner:USBeqsY8DfM4@ep-long-snowflake-a5n1h8yr.us-east-2.aws.neon.tech/projects?sslmode=require"#input("Enter the URL for the Datbase")
-            else:
-                postgreurl = getenv("POSTGRESQL_DB")
+        try:    
+            postgreurl = getenv("POSTGRESQL_DB")
         except BaseException as e:
             log(1, "Error Connecting with database")
             raise e
@@ -147,10 +144,11 @@ class api_point:
                 user_id, transaction_detail, cost
             )
             return True
-        except:
+        except Exception as e:
             log(
                 2, f"Unable to record txns {user_id,transaction_detail,cost}"
             )
+            print(e)
             return False
 
     def see_transactions(self, user_id):
