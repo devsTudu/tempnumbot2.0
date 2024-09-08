@@ -14,7 +14,8 @@ from sqlalchemy import (
     Text,
     TIMESTAMP,
     UniqueConstraint,
-    ForeignKey
+    ForeignKey,
+    func
 )
 from sqlalchemy.engine import ExceptionContext
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -118,6 +119,17 @@ class UserDatabase:
         with self.Session() as session:
             return session.query(Service).filter_by(service_code=service_code).first()
 
+    def get_most_buyed(self,user_id):
+        with self.Session() as session:
+            lis = session.query(Transaction.transaction_detail,
+                          func.count(Transaction.transaction_detail
+                                     ).label('count')
+                          ).filter(Transaction.userid == user_id
+                                   ).filter(Transaction.amount_credited < 0).group_by(Transaction.transaction_detail
+                                   ).order_by(func.count(Transaction.transaction_detail).desc()
+                                              ).all()
+            
+            return [item.transaction_detail for item in lis]
 
 class api_point:
     def __init__(self) -> None:
@@ -163,6 +175,11 @@ class api_point:
         except Exception as e:
             log(2, f"Error while fetching transactions for {user_id}")
             return "Error Fetching Data"
+
+    def get_favourite_services(self, user_id):
+        most_bought = self.user_db.get_most_buyed(user_id)
+        return most_bought
+
 
 reception_api = api_point()
 

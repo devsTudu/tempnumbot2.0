@@ -74,6 +74,9 @@ def answer_to(request):
 
     elif "showSupport" in q:
         response = loadTemplate("support.txt")
+    elif "wantFavServices" in q:
+        lis = reception_api.get_favourite_services(user_id=self.user_id)
+        response = serviceOps.list_items_with_commands(lis)
     else:
         response = "You clicked for " + query.data
         #These will change the message text for the queries

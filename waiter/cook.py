@@ -1,4 +1,5 @@
 import datetime
+from symbol import encoding_decl
 from telegram.bot import logger
 from telegram.models import phoneNumberFlow
 from os import getenv, path
@@ -286,6 +287,13 @@ class serviceOperation:
     def cancelPhone(server,access_id)->bool:
         """Returns True if successfully canceled"""
         return cookAPI().cancel_phone(server,access_id) == 'true'
+
+    @staticmethod
+    def list_items_with_commands(service_lis:list[str])->str:
+        encoded = encodeList(service_lis)
+        resp = "\n".join(f"/ser_{code} {name}"for code,name in encoded.items())
+        return resp
+
 
 class testCases:
 

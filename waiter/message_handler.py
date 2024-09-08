@@ -1,7 +1,7 @@
 from .helper import send_buttons,services,BalanceHandler, loadTemplate
 from .helper_phone import showAvailableServer
 from telegram.bot import bot,logger
-from .cook import serviceOps
+from .cook import serviceOps,encodeList
 from telegram.models import Message
 from reception.main import reception_api
 
@@ -58,7 +58,12 @@ class Commands:
         return send_buttons(self.update,response+txn)
     
     def getfavlist(self):
-        return send_buttons(self.update,"Your Favourite List appears here")
+        lis = reception_api.get_favourite_services(user_id=self.user_id)
+        resp = serviceOps.list_items_with_commands(lis)
+        return send_buttons(self.update,
+                            "Your Favourite List appears here"
+                            +resp)
+
     
     def getreferral(self):
         return send_buttons(self.update,"Your referral scores")
