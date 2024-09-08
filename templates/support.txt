@@ -1,11 +1,10 @@
 Refund Policy and Bot Usage
 
-• Refunds are not available for incorrect OTPs or numbers used.
-• The number remains active for 10 minutes only.
-• Occasionally, delays may occur in receiving OTPs.
-• Auto refunds are processed within 10 minutes.
-• High demand may take time to process.
-• Users are responsible for any losses.
-• Withdrawal from the bot is not currently available.
-• No website or app available for certain apps.
-• Support available at @vnumsupport1.
+* Refunds are not available for incorrect OTPs or numbers used.
+* The number remains active for 10 minutes only.
+* Occasionally, delays may occur in receiving OTPs.
+* High demand may take time to process.
+* Users are responsible for any losses.
+* Withdrawal from the bot is not currently available.
+* No website or app available for certain apps.
+* Support available at @vnumsupport1.
