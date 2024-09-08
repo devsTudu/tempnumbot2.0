@@ -1,3 +1,4 @@
+from ast import Try
 from logging import log
 from os import getenv
 from dotenv import load_dotenv
@@ -19,6 +20,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import ExceptionContext
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.exc import IntegrityError
 
 
 Base = declarative_base()
@@ -50,6 +52,11 @@ class Service(Base):
     price = Column(Float)
     service_code = Column(Text, unique=True)
 
+class Recharges(Base):
+    __tablename__ = "recharge_list"
+    utr_no = Column(Text,primary_key=True)
+    amount = Column(Integer)
+    userid = Column(BigInteger, ForeignKey("user_info.userid"))
 
 class UserDatabase:
     def __init__(self, connection_string):
@@ -79,22 +86,6 @@ class UserDatabase:
                 return 0
             return user.balance
 
-    def recharge_balance(self, user_id, amount):
-        with self.Session() as session:
-            user = session.query(User).filter_by(userid=user_id).first()
-            user.balance += amount
-            session.commit()
-
-    def record_order(self, user_id, prod_detail, amount):
-        with self.Session() as session:
-            transaction = Transaction(
-                userid=user_id, transaction_detail=prod_detail, amount_credited=-amount
-            )
-            session.add(transaction)
-            user = session.query(User).filter_by(userid=user_id).first()
-            user.balance -= amount
-            session.commit()
-
     def record_transaction(self, user_id, transaction_detail, amount_credited):
         with self.Session() as session:
             transaction = Transaction(
@@ -114,6 +105,16 @@ class UserDatabase:
             )
             session.add(new_service)
             session.commit()
+
+    def record_recharge(self,user_id,utr,amount:float):
+        with self.Session() as session:
+            new_recharge = Recharges(userid=user_id, amount=amount, utr_no=utr)
+            try:
+                session.add(new_recharge)
+                return True
+            except IntegrityError as i:
+                return False
+
 
     def get_service_by_code(self, service_code):
         with self.Session() as session:
@@ -146,16 +147,15 @@ class api_point:
 
     def add_balance(self, user_id, amount) -> bool:
         try:
-            self.user_db.recharge_balance(user_id, amount)
-            return True
+            self.user_db.record_transaction(user_id,'Recharge',amount)
         except Exception:
             log(2, f"Unable to recharge {user_id} in the Database")
             return False
 
     def add_transactions(self, user_id, transaction_detail, cost):
         try:
-            self.user_db.record_order(
-                user_id, transaction_detail, cost
+            self.user_db.record_transaction(
+                user_id, transaction_detail, -abs(cost)
             )
             return True
         except Exception as e:

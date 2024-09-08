@@ -6,6 +6,7 @@ from telegram.models import Message,CallbackQuery
 
 
 from reception.main import reception_api
+from reception.bank import reply_for_utr
 
 #Variable Declaration
 templates_dir = "templates/"
@@ -29,11 +30,7 @@ class BalanceHandler:
         return bot.send_photo(self.img, resp, user_id)
 
     def checkUTR(self, message_id, user_id, utr: int):
-        if utr == 12345:
-            reception_api.add_balance(user_id=user_id,amount=10)
-            response = f"Sucess, Your new balance is {reception_api.see_balance(user_id=user_id)}"
-        else:
-            response = """UTR Number did not match\nPlease check it again, or wait for some time till we receive it"""
+        response = reply_for_utr(utr)
         payload = {
             'chat_id': user_id,
             'text': response,

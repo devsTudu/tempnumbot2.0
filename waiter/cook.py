@@ -95,29 +95,6 @@ class cookAPI:
             logger.warning(f"Error canceling @ {server} , {access_id}")
                
         
-def getRecharge(utr_no):
-    """To check and validate for any recharge"""
-    current_datetime = datetime.datetime.now()
-    previous_datetime = current_datetime - datetime.timedelta(hours=72)
-    end_date = current_datetime.timestamp()
-    start_date = previous_datetime.timestamp()
-
-    url = f"https://payments-tesseract.bharatpe.in/api/v1/merchant/transactions?module=PAYMENT_QR&merchantId=34672612&sDate={start_date}&eDate={end_date}"
-    headers = {"Token": getenv("BHARATPE_TOKEN")}
-    print(url)
-
-    response = get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        transactions = data['data']['transactions']
-        for transaction in transactions:
-            # print(utr_no)
-            if transaction['bankReferenceNo'] == utr_no and transaction[
-                    'status'] == 'SUCCESS':
-                var = transaction['amount']
-                return var
-    
-    return 'Failed'
 
 def encodeList(lis)->dict:
     """Returns the dictionary with unique 7 char key for the service name"""
