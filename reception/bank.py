@@ -32,7 +32,7 @@ def reply_for_utr(utr,user_id):
     amount = check_amount_received(utr,'y')
     if not amount:
         return "UTR didnot match, please check it again, or enter after few minutes"
-    if reception_api.record_recharge(user_id=user_id,utr=utr,amount=amount):
+    if reception_api.record_recharge(user_id=user_id,utr=str(utr),amount=amount):
         return "Recharge sucessfull"
     else:
         return "UTR already used, sorry can't repeat"

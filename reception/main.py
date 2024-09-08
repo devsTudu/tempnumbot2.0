@@ -173,7 +173,7 @@ class api_point:
 
     def record_recharge(self,user_id,utr,amount:float):
         with self.user_db.Session as session:
-            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=utr)
+            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
             try:
                 session.add(new_recharge)
                 self.add_balance(user_id, abs(amount))
