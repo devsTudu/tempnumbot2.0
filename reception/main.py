@@ -106,17 +106,7 @@ class UserDatabase:
             session.add(new_service)
             session.commit()
 
-    def record_recharge(self,user_id,utr,amount:float):
-        with self.Session() as session:
-            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=utr)
-            try:
-                session.add(new_recharge)
-                self.record_transaction(user_id,'Recharge',abs(amount))
-                return True
-            except IntegrityError as i:
-                return False
-
-
+    
     def get_service_by_code(self, service_code):
         with self.Session() as session:
             return session.query(Service).filter_by(service_code=service_code).first()
@@ -180,6 +170,16 @@ class api_point:
     def get_favourite_services(self, user_id):
         most_bought = self.user_db.get_most_buyed(user_id)
         return most_bought
+
+    def record_recharge(self,user_id,utr,amount:float):
+        with self.user_db.Session as session:
+            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=utr)
+            try:
+                session.add(new_recharge)
+                self.add_balance(user_id, abs(amount))
+                return True
+            except IntegrityError as i:
+                return False
 
 
 reception_api = api_point()
