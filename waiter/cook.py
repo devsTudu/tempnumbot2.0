@@ -291,9 +291,7 @@ class testCases:
                 print(self.x.fetchPrice(server=ser,service_name=s,provider=p))
             except KeyError:
                 print("Wrong Key")
-    def checkUTR(self):
-        x = getRecharge(input())
-        print(x)
+    
 
 
 serviceOps = serviceOperation()

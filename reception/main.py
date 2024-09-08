@@ -108,9 +108,10 @@ class UserDatabase:
 
     def record_recharge(self,user_id,utr,amount:float):
         with self.Session() as session:
-            new_recharge = Recharges(userid=user_id, amount=amount, utr_no=utr)
+            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=utr)
             try:
                 session.add(new_recharge)
+                self.record_transaction(user_id,'Recharge',abs(amount))
                 return True
             except IntegrityError as i:
                 return False
