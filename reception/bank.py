@@ -2,7 +2,7 @@ import datetime
 from os import getenv
 from dotenv import load_dotenv
 from requests import get
-#from .main import UserDatabase
+from .main import UserDatabase
 
 load_dotenv()
 
@@ -20,8 +20,8 @@ def check_amount_received(utr_no,prin='No'):
         data = response.json()
         transactions = data['data']['transactions']
         for transaction in transactions:
-            utr = int(transaction['bankReferenceNo'])
-            if utr == utr_no and transaction[
+            utr = transaction['bankReferenceNo']
+            if int(utr) == int(utr_no) and transaction[
                     'status'] == 'SUCCESS':
                 var = transaction['amount']
                 return var
@@ -33,7 +33,7 @@ def reply_for_utr(utr,user_id):
     if not amount:
         return "UTR didnot match, please check it again, or enter after few minutes"
     if UserDatabase().record_recharge(user_id=user_id,utr=utr,amount=amount):
-       return "Recharge sucessfull"
+        return "Recharge sucessfull"
     else:
         return "UTR already used, sorry can't repeat"
 
