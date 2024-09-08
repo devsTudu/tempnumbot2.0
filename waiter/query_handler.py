@@ -56,7 +56,7 @@ def answer_to(request):
         x = serviceOps.cancelPhone(server,act_code)
         if x:
             response = f"The {sname} is deactivated, and money refunded"
-            reception_api.add_orders(user_id, f"{sname} CANCELED", -float(price))
+            reception_api.add_orders(user_id, f"{sname} CANCELED", float(price))
             logger.log(5, f"{user_id} cancelled {sname}")
         else:
             logger.error(
