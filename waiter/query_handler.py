@@ -22,7 +22,7 @@ def answer_to(request):
         return services.update_page(query, q)
     elif q == "checkBalance":
         bal = reception_api.see_balance(user_id=user_id)
-        response = f"Your Balance is {bal} "
+        response = f"Your Balance is {bal:.2f} "
     elif q == "recharge":
         return BalanceHandler().openPortal(user_id)
     elif q == "checkHistory":

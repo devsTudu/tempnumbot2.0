@@ -30,7 +30,7 @@ class BalanceHandler:
         return bot.send_photo(self.img, resp, user_id)
 
     def checkUTR(self, message_id, user_id, utr: int):
-        response = reply_for_utr(utr)
+        response = reply_for_utr(utr,user_id)
         payload = {
             'chat_id': user_id,
             'text': response,

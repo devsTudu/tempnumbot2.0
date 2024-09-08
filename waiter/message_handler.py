@@ -46,7 +46,7 @@ class Commands:
 
     def checkbal(self):
         bal = reception_api.see_balance(self.user_id)
-        response = f"Your Balance is {bal} "
+        response = f"Your Balance is {bal:.2f} "
         return send_buttons(self.update,response)
 
     def recharge(self):
