@@ -2,7 +2,7 @@ import datetime
 from os import getenv
 from dotenv import load_dotenv
 from requests import get
-from .main import UserDatabase
+from .main import reception_api
 
 load_dotenv()
 
@@ -32,7 +32,7 @@ def reply_for_utr(utr,user_id):
     amount = check_amount_received(utr,'y')
     if not amount:
         return "UTR didnot match, please check it again, or enter after few minutes"
-    if UserDatabase().record_recharge(user_id=user_id,utr=utr,amount=amount):
+    if reception_api.record_recharge(user_id=user_id,utr=utr,amount=amount):
         return "Recharge sucessfull"
     else:
         return "UTR already used, sorry can't repeat"
