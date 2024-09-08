@@ -1,3 +1,4 @@
+from pickle import FLOAT
 from reception.main import reception_api
 from telegram.models import Message
 from .cook import serviceOps
@@ -19,10 +20,10 @@ def showAvailableServer(service_code, update: Message):
     return send_buttons(update, msg, buttons)
 
 
-def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price,
+def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float,
                          s_actCode,server):
-    #user_db.record_order(chat_id, s_name, s_price)
-    reception_api.add_transactions(chat_id,s_name,-s_price)
+    
+    reception_api.add_transactions(chat_id,s_name,-abs(s_price))
     response = f"here is your `{s_phone}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
@@ -46,7 +47,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
                                    service_name=service_name,
                                    provider=provider)
     user_balance = reception_api.see_balance(user_id=chat_id)
-    if int(user_balance) < int(s_price):
+    if float(user_balance) < float(s_price):
         resp = f"Sorry, {user_firstName} your balance is {user_balance}, and the price for this service is {s_price}"
         bot.send_message(chat_id, resp)
         return BalanceHandler().openPortal(user_id=chat_id)
@@ -59,7 +60,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
         return sendMessageforNumber(chat_id, user_firstName,
                                     data['phone'],
                                     service_name,
-                                    s_price,
+                                    float(s_price),
                                     data['access_id'],server=data['server'])
     except ValueError:
         logger.error("Failed getting number for " + service_name)
