@@ -266,7 +266,7 @@ class serviceOperation:
     @staticmethod
     def list_items_with_commands(service_lis:list[str])->str:
         encoded = encodeList(service_lis)
-        resp = "\n".join(f"/ser_{code} {name}"for code,name in encoded.items())
+        resp = "".join(f"\n/ser_{code} {name}"for code,name in encoded.items())
         return resp
 
 

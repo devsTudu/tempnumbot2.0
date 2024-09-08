@@ -61,7 +61,7 @@ class Commands:
         lis = reception_api.get_favourite_services(user_id=self.user_id)
         resp = serviceOps.list_items_with_commands(lis)
         return send_buttons(self.update,
-                            "Your Favourite List appears here"
+                            "Your Favourite List appears here\n"
                             +resp)
 
     

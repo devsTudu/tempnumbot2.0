@@ -56,7 +56,7 @@ def answer_to(request):
         x = serviceOps.cancelPhone(server,act_code)
         if x:
             response = f"The {sname} is deactivated, and money refunded"
-            reception_api.add_transactions(user_id, f"{sname} CANCELED", -float(price))
+            reception_api.add_orders(user_id, f"{sname} CANCELED", -float(price))
             logger.log(5, f"{user_id} cancelled {sname}")
         else:
             logger.error(
@@ -75,7 +75,7 @@ def answer_to(request):
     elif "showSupport" in q:
         response = loadTemplate("support.txt")
     elif "wantFavServices" in q:
-        lis = reception_api.get_favourite_services(user_id=self.user_id)
+        lis = reception_api.get_favourite_services(user_id=user_id)
         response = serviceOps.list_items_with_commands(lis)
     else:
         response = "You clicked for " + query.data

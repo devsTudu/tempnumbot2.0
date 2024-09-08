@@ -23,7 +23,7 @@ def showAvailableServer(service_code, update: Message):
 def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float,
                          s_actCode,server):
     
-    reception_api.add_transactions(chat_id,s_name,-abs(s_price))
+    reception_api.add_orders(chat_id,s_name,-abs(s_price))
     response = f"here is your `{s_phone}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
@@ -80,7 +80,7 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
         # OTP is cancelled or Expired
         response += "\n Got Canceled or Expired"
         #user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
-        reception_api.add_transactions(user_id,f"{s_name} CANCELED", -int(price))
+        reception_api.add_orders(user_id,f"{s_name} CANCELED", -int(price))
         response += "\n And money refunded."
         payload = {
             'chat_id': user_id,

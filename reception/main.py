@@ -152,10 +152,10 @@ class api_point:
             log(2, f"Unable to recharge {user_id} in the Database")
             return False
 
-    def add_transactions(self, user_id, transaction_detail, cost):
+    def add_orders(self, user_id, transaction_detail, cost):
         try:
             self.user_db.record_transaction(
-                user_id, transaction_detail, -abs(cost)
+                user_id, transaction_detail, cost
             )
             return True
         except Exception as e:
@@ -196,7 +196,7 @@ def test_debasish():
     assert old_bal + 10 == new_bal
 
     # Check Transactions
-    reception_1.add_transactions(myid, "A Test Transaction", 12)
+    reception_1.add_orders(myid, "A Test Transaction", 12)
     new_bal = reception_1.see_balance(myid)
     assert new_bal == old_bal - 2
     print(reception_1.see_transactions(myid))
