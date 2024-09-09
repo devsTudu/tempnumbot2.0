@@ -125,9 +125,10 @@ class UserDatabase:
     def add_recharge(self,user_id,amount,utr):
         with self.Session as session:
             new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
+            log(1,f'Checking recharge at {utr}')
             try:
                 session.add(new_recharge)
-                self.add_balance(user_id, abs(amount))
+                self.record_transaction(user_id,'Recharge',abs(amount))
                 return True
             except IntegrityError as i:
                 return False
@@ -198,7 +199,7 @@ def test_debasish():
 
     # Check Recharge
     old_bal = reception_1.see_balance(myid)
-    reception_1.add_balance(user_id=myid, amount=10)
+    reception_1.record_recharge(user_id=myid, amount=10)
     new_bal = reception_1.see_balance(myid)
     assert old_bal + 10 == new_bal
 
