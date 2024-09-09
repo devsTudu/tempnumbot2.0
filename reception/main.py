@@ -128,8 +128,8 @@ class UserDatabase:
             log(1,f'Checking recharge at {utr}')
             try:
                 session.add(new_recharge)
-                self.record_transaction(user_id,'Recharge',abs(amount))
                 session.commit()
+                self.record_transaction(user_id,'Recharge',abs(amount))
                 return True
             except IntegrityError as i:
                 return False
