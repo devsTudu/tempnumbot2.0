@@ -211,7 +211,7 @@ class serviceOperation:
             distance = levenshtein(query_term.lower(),
                                         name.lower())
             similarity = ((len(query_term) - distance) / len(query_term)) * 100
-            if similarity >= threshold:
+            if (similarity >= threshold) or (query_term.lower() in name.lower()):
                 matches.append([similarity,name,code])
         match_ordered = sorted(matches,key=lambda row:row[0],reverse=True)
         if len(matches) == 0:
