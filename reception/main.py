@@ -123,7 +123,7 @@ class UserDatabase:
             
             return [item.transaction_detail for item in lis]
     def add_recharge(self,user_id,amount,utr):
-        with self.Session as session:
+        with self.Session() as session:
             new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
             log(1,f'Checking recharge at {utr}')
             try:
