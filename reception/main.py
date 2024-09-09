@@ -122,6 +122,18 @@ class UserDatabase:
                                               ).all()
             
             return [item.transaction_detail for item in lis]
+    def add_recharge(self,user_id,amount,utr):
+        with self.user_db.Session as session:
+            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
+            try:
+                session.add(new_recharge)
+                self.add_balance(user_id, abs(amount))
+                return True
+            except IntegrityError as i:
+                return False
+            except Exception as e:
+                log(2,"Recharge Recording Issue")
+                raise e
 
 class api_point:
     def __init__(self) -> None:
@@ -172,17 +184,8 @@ class api_point:
         return most_bought
 
     def record_recharge(self,user_id,utr,amount:float):
-        with self.user_db.Session as session:
-            new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
-            try:
-                session.add(new_recharge)
-                self.add_balance(user_id, abs(amount))
-                return True
-            except IntegrityError as i:
-                return False
-            except Exception as e:
-                log(2,"Recharge Recording Issue")
-                raise e
+        return self.user_db.add_recharge(user_id,amount,utr)
+        
 
 
 reception_api = api_point()
