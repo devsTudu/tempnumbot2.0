@@ -180,6 +180,9 @@ class api_point:
                 return True
             except IntegrityError as i:
                 return False
+            except Exception as e:
+                log(2,"Recharge Recording Issue")
+                raise e
 
 
 reception_api = api_point()
