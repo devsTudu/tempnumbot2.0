@@ -129,6 +129,7 @@ class UserDatabase:
             try:
                 session.add(new_recharge)
                 self.record_transaction(user_id,'Recharge',abs(amount))
+                session.commit()
                 return True
             except IntegrityError as i:
                 return False
