@@ -4,7 +4,8 @@ required_secrets = [
     'BOT_TOKEN',
     'COOK_API_TOKEN',
     'POSTGRESQL_DB',
-    'USE_LITE_DB'
+    'USE_LITE_DB',
+    'PROFIT_RATE'
 ]
 
 

@@ -1,5 +1,4 @@
 from telegram.bot import logger
-from telegram.models import phoneNumberFlow
 from os import getenv, path
 
 from dotenv import load_dotenv
@@ -10,6 +9,9 @@ load_dotenv()
 API_KEY = getenv("COOK_API_TOKEN")
 COOK_URL = "https://fastapi-tempnumbot.onrender.com"
 MENU_LIST = "menu.txt"
+profit_rate = int(getenv("PROFIT_RATE")) if getenv("PROFIT_RATE") else 30
+SALES_PRICE = lambda x: int(float(x)*(1+profit_rate/100)+1)
+
 
 class cookAPI:
     headers = {
@@ -227,11 +229,16 @@ class serviceOperation:
         """Returns the list of servers available for the given service code"""
         # service_name = self.database[service_code]
         lis = cookAPI().get_server_list(service_name=service_name)
+        try:
+            # return sorted(dicts, key=lambda x: x[key])
+            lis = sorted(lis,key=lambda x:x['cost'])
+        except:
+            pass
         buttons = []
         if lis:
-            for i in lis:
-                btn = [(f"{i['server']}🌐 with cost:{i['cost']}💰",
-                       f"buy_{i['server']}_{service_name}_{i['provider']}")]
+            for i,offer in enumerate(lis):
+                btn = [(f"🌐SERVER {i} with cost:{SALES_PRICE(offer['cost'])}💰",
+                       f"buy_{offer['server']}_{service_name}_{offer['provider']}")]
                 buttons.append(btn)
         return buttons
     
@@ -240,7 +247,7 @@ class serviceOperation:
         lis = cookAPI().get_server_list(service_name=service_name)
         for i in lis:
             if i['server']==server and i['provider'] == provider:
-                return float(i['cost'])
+                return SALES_PRICE(i['cost']) 
         logger.critical(f"Error price fetching,{server,service_name,provider}")
         return 99.9
         
@@ -297,5 +304,5 @@ class testCases:
 serviceOps = serviceOperation()
 
 if __name__ == '__main__':
-    service = serviceOperation()
+    testCases(serviceOps).test_see_price()
     

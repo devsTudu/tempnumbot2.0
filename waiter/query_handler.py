@@ -36,8 +36,8 @@ def answer_to(request):
         return requestNumber(server,service_name,provider,user_id,user_name)
         
     elif "chk" in q:
-        #{s_name}_{price}
-        n, act_code, phoneNo, sname, price,server = q.split("_")
+        #chk{n+1}_{act_code}_{phoneNo}_{s_name}_{price}_{server}_{provider}
+        n, act_code, phoneNo, sname, price,server,provider = q.split("_")
         try:
             n = int(n.split('chk')[-1])
         except ValueError:
@@ -49,7 +49,8 @@ def answer_to(request):
                               s_name=sname,
                               price=price,
                               n=n,
-                             server=server)
+                             server=server,
+                             provider=provider)
     elif "cancel" in q:
         # Once check for OTP the last time, before canceling
         _, act_code, sname, price,server = q.split("_")
@@ -70,8 +71,13 @@ def answer_to(request):
             # return bot.send_message(user_id,response)
     elif "againOTP" in q:
         return bot.send_message(user_id,"Requesting more otp is not allowed now.")
+    
+    elif 'buyagain' in q:
+        # buyagain_{s_name}_{price}_{server}_{provider}
+        _,service_name,price,server,provider = q.split('_')
+        logger.log(3,f"{user_name} rebuys {service_name,server,provider}")
+        return requestNumber(server,service_name,provider,user_id,user_name)
         
-
     elif "showSupport" in q:
         response = loadTemplate("support.txt")
     elif "wantFavServices" in q:

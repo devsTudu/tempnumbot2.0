@@ -8,8 +8,9 @@ import json
 
 
 #Get Phone Number Sequence
-def showAvailableServer(service_code, update: Message):
-    service_name = serviceOps.getServiceName(service_code)
+def showAvailableServer(service_code, update: Message,service_name=''):
+    if service_name != '':
+        service_name = serviceOps.getServiceName(service_code)
     buttons = serviceOps.getServerListButtonFor(service_name)
     if buttons is None or len(buttons) == 0:
         return bot.reply_message(
@@ -72,7 +73,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
         
 
 #Handle the requests for updates on OTP after getting
-def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,server):
+def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,server,provider):
     response = f"Your number : `{phoneNo[:]}`"
     response += f"\n for {s_name}"
     otp = serviceOps.getOTP(server,act_code)
@@ -96,7 +97,7 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
             "text":
             "Check for OTP",
             "callback_data":
-            f"chk{n+1}_{act_code}_{phoneNo}_{s_name}_{price}_{server}"
+            f"chk{n+1}_{act_code}_{phoneNo}_{s_name}_{price}_{server}_{provider}"
         }]]
         if n % 5 == 4:
             inline_button.append([{
@@ -121,7 +122,14 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
             "Need OTP again",
             "callback_data":
             f"againOTP_{act_code}_{phoneNo}_{s_name}_{price}_{server}"
-        }]]
+        }],
+                         [{
+            "text":
+            "Buy Again",
+            "callback_data":
+            f"buyagain_{s_name}_{price}_{server}_{provider}"
+        }]
+                         ]
         payload = {
             'chat_id': user_id,
             'text': response,
