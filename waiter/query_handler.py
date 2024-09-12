@@ -30,6 +30,13 @@ def answer_to(request):
         txn = reception_api.see_transactions(user_id)
         response+=txn
     #Checking for OTP and Canceling Queries
+    
+    elif 'buyagain' in q:
+        # buyagain_{s_name}_{price}_{server}_{provider}
+        _,service_name,price,server,provider = q.split('_')
+        logger.log(3,f"{user_name} rebuys {service_name,server,provider}")
+        return requestNumber(server,service_name,provider,user_id,user_name)
+
     elif 'buy' == q[:3]:
         _,server,service_name,provider = q.split('_')
         logger.log(3,f"{user_name} buy {service_name,server,provider}")
@@ -72,11 +79,6 @@ def answer_to(request):
     elif "againOTP" in q:
         return bot.send_message(user_id,"Requesting more otp is not allowed now.")
     
-    elif 'buyagain' in q:
-        # buyagain_{s_name}_{price}_{server}_{provider}
-        _,service_name,price,server,provider = q.split('_')
-        logger.log(3,f"{user_name} rebuys {service_name,server,provider}")
-        return requestNumber(server,service_name,provider,user_id,user_name)
         
     elif "showSupport" in q:
         response = loadTemplate("support.txt")
