@@ -18,6 +18,12 @@ class cookAPI:
       'accept': 'application/json',
       'x-api-key': API_KEY
     }
+
+    def __init__(self) -> None:
+        # Waking up the Cook Server
+        req = get(COOK_URL)
+        if req.status_code == 200:
+            logger.info(f'Cook server is wake at {COOK_URL}')
     
     @staticmethod
     def get_serviceList()->list:
@@ -237,7 +243,7 @@ class serviceOperation:
         buttons = []
         if lis:
             for i,offer in enumerate(lis):
-                btn = [(f"🌐SERVER {i} with cost:{SALES_PRICE(offer['cost'])}💰",
+                btn = [(f"🌐SERVER {i+1} with cost:{SALES_PRICE(offer['cost'])}💰",
                        f"buy_{offer['server']}_{service_name}_{offer['provider']}")]
                 buttons.append(btn)
         return buttons
@@ -249,7 +255,7 @@ class serviceOperation:
             if i['server']==server and i['provider'] == provider:
                 return SALES_PRICE(i['cost']) 
         logger.critical(f"Error price fetching,{server,service_name,provider}")
-        return 99.9
+        return 9999
         
     @staticmethod
     def getPhoneNumber(service_name:str,server:str,provider:str='Any'):

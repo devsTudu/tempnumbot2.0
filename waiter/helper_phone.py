@@ -1,4 +1,3 @@
-from pickle import FLOAT
 from reception.main import reception_api
 from telegram.models import Message
 from .cook import serviceOps
@@ -22,7 +21,7 @@ def showAvailableServer(service_code, update: Message,service_name=''):
 
 
 def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float,
-                         s_actCode,server):
+                         s_actCode,server,provider):
     
     reception_api.add_orders(chat_id,s_name,-abs(s_price))
     response = f"here is your `{s_phone}` for {s_name}\n"
@@ -31,7 +30,7 @@ def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float
     inline_button = [[{
         "text":"Check for OTP",
         "callback_data":
-        f"chk_{s_actCode}_{s_phone}_{s_name}_{s_price}_{server}"
+        f"chk_{s_actCode}_{s_phone}_{s_name}_{s_price}_{server}_{provider}"
     }]]
     payload = {
         'chat_id': chat_id,
@@ -47,6 +46,11 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
     s_price = serviceOps.fetchPrice(server=server,
                                    service_name=service_name,
                                    provider=provider)
+    if s_price>=999:
+        # The price when it fails to get the actual price
+        logger.error("Failed getting number for " + service_name)
+        bot.send_message(chat_id, "Sorry there was an issue getting your number for " +service_name +",\nDevelopers are notified about this and will come back to you")
+        return         
     user_balance = reception_api.see_balance(user_id=chat_id)
     if float(user_balance) < float(s_price):
         resp = f"Sorry, {user_firstName} your balance is {user_balance}, and the price for this service is {s_price}"
@@ -62,7 +66,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
                                     data['phone'],
                                     service_name,
                                     float(s_price),
-                                    data['access_id'],server=data['server'])
+                                    data['access_id'],server=data['server'],provider=provider)
     except ValueError:
         logger.error("Failed getting number for " + service_name)
         bot.send_message(chat_id, "Sorry there was an issue getting your number for " +service_name +",\nDevelopers are notified about this and will come back to you")
