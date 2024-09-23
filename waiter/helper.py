@@ -18,7 +18,7 @@ def loadTemplate(filename):
 
 class BalanceHandler:
     """Handles the balance of users, and also helps in recharge"""
-    def __init__(self,image_file='qr.jpg') -> None:
+    def __init__(self,image_file='qr.png') -> None:
         if path.isfile(image_file):
             self.img = image_file
         else:
