@@ -29,7 +29,7 @@ def check_amount_received(utr_no):
     return False
 
 def reply_for_utr(utr,user_id):
-    amount = check_amount_received(utr,'y')
+    amount = check_amount_received(utr)
     if not amount:
         return "UTR didnot match, please check it again, or enter after few minutes"
     if reception_api.record_recharge(user_id=user_id,utr=str(utr),amount=amount):
