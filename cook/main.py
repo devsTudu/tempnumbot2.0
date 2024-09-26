@@ -1,7 +1,7 @@
 from logging import log
-#from models import SERVERS, phoneDetails
+from models import SERVERS, phoneDetails
 from helper import api_requests
-import json
+import asyncio
 
 req = api_requests()
 def get_price_from_name(servicename:str):
@@ -48,6 +48,11 @@ def cancel_phone(server: SERVERS, access_id: str):
     return resp
 
 
-if __name__=='__main__':
-    print(get_price_from_name('Telegram'))
+def test_services():
+    name = 'Telegram'
+    prices = asyncio.run(get_price_from_name(name))
+    print(prices)
 
+
+if __name__=='__main__':
+    test_services()
