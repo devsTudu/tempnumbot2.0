@@ -83,15 +83,20 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
     otp = serviceOps.getOTP(server,act_code)
     if otp == -1:
         # OTP is cancelled or Expired
-        response += "\n Got Canceled or Expired"
+        response += "\n is Canceled or Expired"
         #user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
         reception_api.add_orders(user_id,f"{s_name} CANCELED", -int(price))
         response += "\n And money refunded."
+        inline_button = [[{
+            "text":"Buy Again",
+            "callback_data":f"buyagain_{s_name}_{price}_{server}_{provider}"
+}]]
         payload = {
             'chat_id': user_id,
             'text': response,
             'message_id': message_id,
-            "parse_mode": "Markdown"
+            "parse_mode": "Markdown",
+            'reply_markup': json.dumps({'inline_keyboard': inline_button})
         }
         return bot.send_request("editMessageText", payload)
     elif otp == 0:
