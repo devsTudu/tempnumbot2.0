@@ -24,7 +24,7 @@ def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float
                          s_actCode,server,provider):
     
     reception_api.add_orders(chat_id,s_name,-abs(s_price))
-    response = f"here is your `{s_phone}` for {s_name}\n"
+    response = f"here is your {str(s_phone)[:-10]} `{str(s_phone)[-10:]}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
     inline_button = [[{
@@ -78,7 +78,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
 
 #Handle the requests for updates on OTP after getting
 def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,server,provider):
-    response = f"Your number : `{phoneNo[:]}`"
+    response = f"Your number : {str(phoneNo)[:-10]} `{str(phoneNo)[-10:]}`"
     response += f"\n for {s_name}"
     otp = serviceOps.getOTP(server,act_code)
     if otp == -1:

@@ -1,7 +1,6 @@
 from telegram.bot import bot,logger
 from .query_handler import answer_to
 from .message_handler import respond_to
-from icecream import ic
 
 def workOn(request):
     if 'callback_query' in request:
