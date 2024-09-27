@@ -25,6 +25,7 @@ class cookAPI:
         # req = get(COOK_URL)
         # if req.status_code == 200:
         #    logger.info(f'Cook server is wake at {COOK_URL}')
+        pass
     
     @staticmethod
     def get_serviceList()->list:
