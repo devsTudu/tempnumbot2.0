@@ -1,6 +1,5 @@
 import asyncio
-from tkinter.messagebox import RETRY
-from models import (Error,offers,phone_detail,serviceDetails,serviceInfo,phoneDetails,SERVERS)
+from models import (offers,phone_detail,serviceInfo,SERVERS, priceResponse,countryInfo)
 from tools import (commonTools, BASE_URL, TOKENS)
 from abc import abstractmethod, ABC
 
@@ -93,7 +92,7 @@ class fastsms(server):
 
             price = list(response['22'][service_code].keys())[0]
             count = list(response['22'][service_code].values())[0]
-            return [offers('fast',count=count,cost=price)]
+            return [offers('Fast',count=count,cost=price)]
         except:
             pass
     async def check_otp(self, access_id: str) -> str:
@@ -153,7 +152,7 @@ class tigersms(server):
         response = await tools.getJson(base_url, params=params)
         try:
             data = response[countrycode][serviceid]
-            return [offers('tiger',cost=data['cost'],count=data['count'])]
+            return [offers('Tiger',cost=data['cost'],count=data['count'])]
         except:
             pass
 
@@ -240,10 +239,6 @@ class tigersms(server):
             return "CANCEL" in response
             
 
-    
-    
-
-
 class bowersms(server):
     def __init__(self):
         self.url = "https://smsbower.com/stubs/handler_api.php"
@@ -271,7 +266,7 @@ class bowersms(server):
             return None
         try:
             data = response[countryCode][serviceCode]  # cost and count
-            return [offers('bower',count=data['count'],cost=data['cost'])]
+            return [offers('Bower',count=data['count'],cost=data['cost'])]
         except:
             pass
 
@@ -388,7 +383,7 @@ class fivesimsms(server):
             for key, val in respond.items():
                 if val['count'] == 0:
                     continue
-                lis.append(offers('fivesim',key,val['count'],val['cost']))
+                lis.append(offers('5Sim',key,val['count'],val['cost']))
             return lis
         except Exception:
             pass
@@ -437,28 +432,7 @@ class fivesimsms(server):
             except:
                 pass
 
-        # example = {
-        #     "id": 11631253,
-        #     "created_at": "2018-10-13T08:13:38.809469028Z",
-        #     "phone": "+79000381454",
-        #     "product": "vkontakte",
-        #     "price": 21,
-        #     "status": "RECEIVED",
-        #     "expires": "2018-10-13T08:28:38.809469028Z",
-        #     "sms": [
-        #         {
-        #             "created_at": "2018-10-13T08:20:38.809469028Z",
-        #             "date": "2018-10-13T08:19:38Z",
-        #             "sender": "VKcom",
-        #             "text": "VK: 09363 - use this code to reclaim your suspended profile.",
-        #             "code": "09363"
-        #         }
-        #     ],
-        #     "forwarding": false,
-        #     "forwarding_number": "",
-        #     "country": "russia"
-        # }
-
+        
     
     async def cancel(self, access_id):
         url = f'https://5sim.net/v1/user/cancel/' + str(access_id)
@@ -470,6 +444,73 @@ class fivesimsms(server):
             return response['status'] == "CANCELED/FINISHED"
         except ValueError:
             return False
+
+
+class api_requests():
+    def __init__(self):
+        self.fast = fastsms()
+        self.tiger = tigersms()
+        self.bower = bowersms()
+        self.five = fivesimsms()
+        self.server = {
+            "Fast": self.fast,
+            "Tiger":self.tiger,
+            "Bower":self.bower,
+            "5Sim": self.five
+        }
+    
+    
+    async def get_balance(self, serverName: SERVERS):
+        server = self.server[serverName]
+        bal = await server.get_balance()
+        return {serverName: bal}
+
+    async def get_prices(self, serviceinfo: serviceInfo)-> priceResponse:
+        lis = []
+        if serviceinfo.bowerCode:
+            lis+= await self.bower.get_prices(serviceinfo.bowerCode)
+        if serviceinfo.tigerCode:
+            lis+= await self.tiger.get_prices(serviceinfo.tigerCode)
+        if serviceinfo.fastCode:
+            lis+= await self.fast.get_prices(serviceinfo.fastCode)
+        if serviceinfo.fiveCode:
+            lis+= await self.five.get_prices(serviceinfo.fiveCode)
+        
+        return priceResponse(service=serviceinfo, offers=lis)
+        
+
+    async def getPricesFromName(self, serviceName: str):
+        serviceinfo = tools.getServiceInfo(serviceName, country=countryInfo())
+        if serviceinfo is None:
+            return "Service not found"
+        return await self.get_prices(serviceinfo)
+
+    async def getPhoneFromName(self, server_name: SERVERS,
+                               serviceName: str = None,
+                               provider: str = 'Any') -> phone_detail:
+        serviceinfo = tools.getServiceInfo(serviceName, countryInfo())
+        if serviceinfo is None:
+            return "Service not found"
+        return await self.server[server_name].get_phone_number(self.get_service_code(server_name,serviceinfo),provider)
+
+
+    async def get_otp(self, server_name: SERVERS,
+                        access_id: str,
+                        ) -> str:
+        server = self.server[server_name]
+        return await server.check_otp(access_id)
+
+    def get_service_code(self,server_name:SERVERS,service_info:serviceInfo):
+        if server_name == '5Sim':  return service_info.fiveCode
+        if server_name == 'Bower': return service_info.bowerCode
+        if server_name == 'Fast' : return service_info.fastCode
+        if server_name == 'Tiger' : return service_info.tigerCode
+
+    async def cancelPhone(self, serverName: SERVERS, access_id: str):
+        server = self.server[serverName]
+        return await server.cancel(access_id) # server.cancelService(access_id)
+
+
         
 
 async def manualtest():
@@ -485,80 +526,29 @@ async def manualtest():
     cancel =await fs.cancel(ph.access_id)
     print(cancel)
 
+async def manualtest2():
+    api = api_requests()
+    balances = []
+    for i in ['Fast', 'Tiger', '5Sim', 'Bower']:
+        balances.append(await api.get_balance(i))
+    print(balances)
+    
+    service = input('Service Name :')
+    prices = await api.getPricesFromName(service)
+    print(prices)
 
-class api_requests:
-    def __init__(self):
-        self.fast = fastSMS()
-        self.tiger = tigerSMS()
-        self.bower = bowerSMS()
-        self.five = FiveSim()
-        self.server = {
-            "Fast": self.fast,
-            "Tiger": self.tiger,
-            "Bower": self.bower,
-            "5Sim": self.five
-        }
+    server = input('Server Name :')
+    provider = input('Provider :')
+    phone = await api.getPhoneFromName(server,service,provider)
+    print(phone)
 
-    async def get_balance(self, serverName: SERVERS):
-        server = self.server[serverName]
-        bal = await server.getBalance()
-        return {serverName: bal}
-
-    async def getPrices(self, serviceinfo: serviceInfo):
-        lis = []
-        if serviceinfo.bowerCode:
-            lis.append(await self.bower.getServiceDetails(serviceinfo))
-        if serviceinfo.tigerCode:
-            lis.append(await self.tiger.getServiceDetails(serviceinfo))
-        if serviceinfo.fastCode:
-            lis.append(await self.fast.getServiceDetails(serviceinfo))
-        if serviceinfo.fiveCode:
-            lis += await self.five.getServiceDetails(serviceinfo)
-        offering = []
-        for i in lis:
-            if tools.isError(i):
-                continue
-            data = {
-                "server": i.server,
-                "provider": i.provider,
-                "cost": i.cost,
-                "count": i.count
-            }
-            offering.append(offers(**data))
-        resp = priceResponse(service=serviceinfo, offers=offering)
-        return resp.dump()
-
-    async def getPricesFromName(self, serviceName: str):
-        serviceinfo = tools.getServiceInfo(serviceName, country=countryInfo())
-        if serviceinfo is None:
-            return "Service not found"
-        return await self.getPrices(serviceinfo)
-
-    async def getPhoneFromName(self, server: SERVERS,
-                               serviceName: str = None,
-                               provider: str = 'Any',
-                               user: str = '123456789') -> phoneDetails:
-        serviceinfo = tools.getServiceInfo(serviceName, countryInfo())
-        if serviceinfo is None:
-            return "Service not found"
-        service = serviceDetails(server=server,
-                                 provider=provider,
-                                 serviceInfo=serviceinfo)
-        return await self.getPhone(serviceOrder=service, user=user)
-
-    async def getPhone(self, serviceOrder: serviceDetails, user) -> phoneDetails:
-        server = self.server[serviceOrder.server]
-        return await server.getPhoneNumber(serviceOrder, user=user)
-
-    async def getStatus(self, serverName: SERVERS,
-                        access_id: str,
-                        phone=123456789) -> phoneDetails:
-        server = self.server[serverName]
-        return await server.getStatus(phoneDet=phoneDetails(access_id=access_id, phone=phone))
-
-    async def cancelPhone(self, serverName: SERVERS, access_id: str):
-        server = self.server[serverName]
-        return await server.cancelService(access_id)
-
+    while True:
+        query = input('Cancel/Check OTP')
+        if query.lower() == 'cancel':
+            print( await api.cancelPhone(server,phone.access_id))
+            break
+        else:
+            update = await api.get_otp(server,phone.access_id)
+            print(f"Status for {phone} is :{update}")
 if __name__ == '__main__':
-    asyncio.run(manualtest())
+    asyncio.run(manualtest2())

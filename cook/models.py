@@ -7,6 +7,8 @@ class countryInfo:
     def __init__(self, name='india', code='22'):
         self.name = name
         self.code = code
+    def __repr__(self) -> str:
+        return self.name
 
 class serviceInfo:
     def __init__(self, name, fastCode=None, tigerCode=None, bowerCode=None, fiveCode=None, country=countryInfo):
@@ -16,6 +18,9 @@ class serviceInfo:
         self.bowerCode = bowerCode
         self.fiveCode = fiveCode
         self.country = country
+
+    def __repr__(self) -> str:
+        return f"S.Info(Name:{self.name},country:{self.country})"
 
 class serviceDetails:
     def __init__(self, server, serviceInfo, provider='Any', count=1, cost=1.0):
@@ -55,6 +60,9 @@ class priceResponse:
     def __init__(self, service:serviceInfo, offers:offers):
         self.service = service
         self.offers = offers
+
+    def __repr__(self) -> str:
+        return f"{self.service} has {self.offers}"
     
 class phone_detail:
     def __init__(self,phone,access_id):
