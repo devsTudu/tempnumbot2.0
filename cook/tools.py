@@ -4,9 +4,8 @@ from os import getenv
 from pprint import pprint
 from typing import Union
 
-from pydantic import BaseModel
 from requests import get
-from .models import (serviceInfo,countryInfo,Error)
+from models import (serviceInfo,countryInfo,Error)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,17 +25,6 @@ TOKENS = {
   'tiger': getenv('TIGER_API'),
   '5Sim': getenv('FIVESIM_API')
 }
-
-
-def show(object:BaseModel):
-   if isinstance(object,BaseModel):
-      pprint(object.model_dump())
-   elif isinstance(object,list):
-    for i in object:
-        show(i)
-   else:
-      pprint(object)
-   return object
 
 
 

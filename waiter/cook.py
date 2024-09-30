@@ -1,6 +1,7 @@
+from cook.models import phone_detail
 from telegram.bot import logger
 from os import getenv, path
-
+from cook import main as cook_local
 from dotenv import load_dotenv
 
 from requests import get
@@ -21,9 +22,10 @@ class cookAPI:
 
     def __init__(self) -> None:
         # Waking up the Cook Server
-        req = get(COOK_URL)
-        if req.status_code == 200:
-            logger.info(f'Cook server is wake at {COOK_URL}')
+        # req = get(COOK_URL)
+        # if req.status_code == 200:
+        #    logger.info(f'Cook server is wake at {COOK_URL}')
+        pass
     
     @staticmethod
     def get_serviceList()->list:
@@ -50,15 +52,12 @@ class cookAPI:
     @classmethod
     def get_phone_no(cls,server,service_name,provider):
         """Returns dict{phone,access_id,server}"""
-        url = COOK_URL+'/getPhone'
-        params = {'server':server,'service_name':service_name,'provider':provider}
-        response = get(url,params,headers=cls.headers)
-
-        if response.status_code == 200:
+        phone = cook_local.get_phone_number(server=server,service_name=service_name,provider=provider)
+        if isinstance(phone,phone_detail):
             try:
                 data = {
-                    'phone':response.json()['phone'],
-                    'access_id':response.json()['access_id'],
+                    'phone':phone.phone,
+                    'access_id':phone.access_id,
                     'server':server
                 }
                 return data
@@ -70,36 +69,21 @@ class cookAPI:
     @classmethod
     def check_for_otp(cls,server,access_id):
         """returns otp if received, 0 if waiting, -1 otherwise"""
-        url = COOK_URL+'/updates'
-        params = {'server':server,'access_id':access_id,'phone':'9348692623'}
-        response = get(url,params,headers=cls.headers)
-        print(params)
-        print(response)
-        if response.status_code == 200:
-            try:
-                status = response.json()['status']
-                if status == "Success":
-                    return response.json()['otp']
-                elif status == 'Waiting':
-                    return 0
-                else:
-                    return -1
-            except KeyError as k:
-                msg = f"Error fetching otp for {server} with id {access_id} : {k}"
-                logger.fatal(msg)
-        print(response.text)
-        return 0
+        update = cook_local.get_updates(server,access_id)
+        if isinstance(update,str):
+            if 'wait' in update:
+                return 0
+            if 'cancel' in update:
+                return -1
+            return update
+
     
     @classmethod
     def cancel_phone(cls,server,access_id):
-        url = COOK_URL+'/cancelPhone'
-        params = {'server':server, 'access_id':access_id}
-        response = get(url,params,headers=cls.headers)
-        if response.status_code == 200:
-            return response.text
-        else:
+        iscanceled = cook_local.cancel_phone(server,access_id)
+        if not iscanceled:    
             logger.warning(f"Error canceling @ {server} , {access_id}")
-               
+        return iscanceled
         
 
 def encodeList(lis)->dict:
