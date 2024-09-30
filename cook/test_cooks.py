@@ -3,8 +3,8 @@ import os
 os.chdir(os.path.dirname(__file__))  # Set the working directory to the script's directory
 pytest.main()
 
-from helper import fastsms,tigersms,bowersms,server,fivesimsms
-from models import phone_detail, offers
+from .helper import fastsms,tigersms,bowersms,server,fivesimsms
+from .models import phone_detail, offers
 import time
 
 

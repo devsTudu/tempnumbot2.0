@@ -1,6 +1,6 @@
 from logging import log
-from models import SERVERS, phone_detail, phoneDetails
-from helper import api_requests
+from .models import SERVERS, phone_detail, phoneDetails
+from .helper import api_requests
 import asyncio
 
 req = api_requests()

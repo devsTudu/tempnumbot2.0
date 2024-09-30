@@ -5,7 +5,7 @@ from pprint import pprint
 from typing import Union
 
 from requests import get
-from models import (serviceInfo,countryInfo,Error)
+from .models import (serviceInfo,countryInfo,Error)
 from dotenv import load_dotenv
 
 load_dotenv()
