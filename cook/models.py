@@ -56,8 +56,10 @@ class offers:
     def __repr__(self) -> str:
         return f"S({self.server}),P({self.provider}),Cost({self.cost}),Count({self.count})"
 
+
+
 class priceResponse:
-    def __init__(self, service:serviceInfo, offers:offers):
+    def __init__(self, service:serviceInfo, offers:list[offers]):
         self.service = service
         self.offers = offers
 

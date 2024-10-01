@@ -1,5 +1,5 @@
 from logging import log
-from .models import SERVERS, phone_detail, phoneDetails
+from .models import SERVERS, phone_detail
 from .helper import api_requests
 import asyncio
 
@@ -7,7 +7,7 @@ req = api_requests()
 async def get_price_from_name(servicename:str):
     try:
         resp = await req.getPricesFromName(serviceName=servicename)
-    except Exception as e:
+    except Exception:
         log(2,f"Error getting price for {servicename}")
         resp = "Error fetching prices you can try again"
     return resp

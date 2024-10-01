@@ -465,7 +465,12 @@ class api_requests():
         bal = await server.get_balance()
         return {serverName: bal}
 
-    async def get_prices(self, serviceinfo: serviceInfo)-> priceResponse:
+
+    async def getPricesFromName(self, serviceName: str):
+        serviceinfo = tools.getServiceInfo(serviceName, country=countryInfo())
+        if serviceinfo is None:
+            return "Service not found"
+
         lis = []
         if serviceinfo.bowerCode:
             lis+= await self.bower.get_prices(serviceinfo.bowerCode)
@@ -477,13 +482,7 @@ class api_requests():
             lis+= await self.five.get_prices(serviceinfo.fiveCode)
         
         return priceResponse(service=serviceinfo, offers=lis)
-        
 
-    async def getPricesFromName(self, serviceName: str):
-        serviceinfo = tools.getServiceInfo(serviceName, country=countryInfo())
-        if serviceinfo is None:
-            return "Service not found"
-        return await self.get_prices(serviceinfo)
 
     async def getPhoneFromName(self, server_name: SERVERS,
                                serviceName: str = None,

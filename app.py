@@ -42,6 +42,8 @@ def manualset():
         return "url parameter not received"
     return waiter.setmanualhook(url)
 
+
+
 if __name__=='__main__':
     app.run()
 

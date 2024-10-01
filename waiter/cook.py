@@ -1,4 +1,4 @@
-from cook.models import phone_detail
+from cook.models import phone_detail, priceResponse
 from telegram.bot import logger
 from os import getenv, path
 from cook import main as cook_local
@@ -35,15 +35,12 @@ class cookAPI:
         return menu
 
     @classmethod
-    def get_server_list(cls,service_name)->list[dict]:
+    async def get_server_list(cls,service_name)->list[dict]:
+        
         """Returns the json list of all the servers, available for the service_name, else returns none"""
-        url = f"{COOK_URL}/getPrices"
-        params = {'servicename':service_name}
-    
-        response = get(url,params=params,headers=cls.headers)
-        if response.status_code == 200:
-            reply :list[dict] = response.json()['offers']
-            return reply
+        prices = await cook_local.get_price_from_name(service_name)
+        if isinstance(prices,priceResponse):
+            return map(vars, prices.offers)
         else:
             logger.error(f"Error fetching offers for {service_name},returned {response.text}")
             return []
