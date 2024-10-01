@@ -42,7 +42,7 @@ class cookAPI:
         if isinstance(prices,priceResponse):
             return map(vars, prices.offers)
         else:
-            logger.error(f"Error fetching offers for {service_name},returned {response.text}")
+            logger.error(f"Error fetching offers for {service_name}")
             return []
             
 
@@ -212,10 +212,10 @@ class serviceOperation:
         if service_code in self.database:
             return self.database[service_code]
     
-    def getServerListButtonFor(self,service_name)->list[list]:
+    async def getServerListButtonFor(self,service_name)->list[list]:
         """Returns the list of servers available for the given service code"""
         # service_name = self.database[service_code]
-        lis = cookAPI().get_server_list(service_name=service_name)
+        lis = await cookAPI().get_server_list(service_name=service_name)
         try:
             # return sorted(dicts, key=lambda x: x[key])
             lis = sorted(lis,key=lambda x:x['cost'])
