@@ -53,7 +53,7 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
         return         
     user_balance = reception_api.see_balance(user_id=chat_id)
     if float(user_balance) < float(s_price):
-        resp = f"Sorry, {user_firstName} your balance is {user_balance}, and the price for this service is {s_price}"
+        resp = f"Sorry, {user_firstName} your balance is {user_balance:.2f}, and the price for this service is {s_price}"
         bot.send_message(chat_id, resp)
         return BalanceHandler().openPortal(user_id=chat_id)
     try:

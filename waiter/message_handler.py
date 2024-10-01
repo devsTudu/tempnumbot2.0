@@ -70,7 +70,7 @@ class Commands:
         
 
 #Handle the messages
-def respond_to(request):
+async def respond_to(request):
     try:
         update = Message(request)
         logger.info("%s messaged: %s",
@@ -80,7 +80,7 @@ def respond_to(request):
         raise e from None
     if update.is_command:
         commands = Commands(update=update)
-        commands.run()
+        await commands.run()
     elif update.text.isdigit():
         BalanceHandler().checkUTR(update.message_id, update.user_id,
                                   int(update.text))
