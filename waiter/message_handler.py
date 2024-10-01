@@ -21,12 +21,12 @@ class Commands:
             "/referal":self.getreferral
         }
         
-    def run(self):
+    async def run(self):
         command = self.update.text
         if "ser_" in command:
             service_code = str(command)[5:]
             # This will check for the available services for this number
-            return showAvailableServer(service_code,self.update)
+            return await showAvailableServer(service_code,self.update)
         try:
             return self.commands_map[command]()
         except KeyError as e:

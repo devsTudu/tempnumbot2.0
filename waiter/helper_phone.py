@@ -7,10 +7,10 @@ import json
 
 
 #Get Phone Number Sequence
-def showAvailableServer(service_code, update: Message,service_name=''):
+async def showAvailableServer(service_code, update: Message,service_name=''):
     if service_name == '':
         service_name = serviceOps.getServiceName(service_code)
-    buttons = serviceOps.getServerListButtonFor(service_name)
+    buttons = await serviceOps.getServerListButtonFor(service_name)
     if buttons is None or len(buttons) == 0:
         return bot.reply_message(
             update.chat_id, update.message_id,
