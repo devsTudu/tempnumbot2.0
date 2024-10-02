@@ -21,12 +21,12 @@ class Commands:
             "/referal":self.getreferral
         }
         
-    async def run(self):
+    def run(self):
         command = self.update.text
         if "ser_" in command:
             service_code = str(command)[5:]
             # This will check for the available services for this number
-            return await showAvailableServer(service_code,self.update)
+            return showAvailableServer(service_code,self.update)
         try:
             return self.commands_map[command]()
         except KeyError as e:
@@ -70,7 +70,7 @@ class Commands:
         
 
 #Handle the messages
-async def respond_to(request):
+def respond_to(request):
     try:
         update = Message(request)
         logger.info("%s messaged: %s",
@@ -80,7 +80,7 @@ async def respond_to(request):
         raise e from None
     if update.is_command:
         commands = Commands(update=update)
-        await commands.run()
+        commands.run()
     elif update.text.isdigit():
         BalanceHandler().checkUTR(update.message_id, update.user_id,
                                   int(update.text))

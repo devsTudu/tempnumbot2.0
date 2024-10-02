@@ -7,10 +7,10 @@ import json
 
 
 #Get Phone Number Sequence
-async def showAvailableServer(service_code, update: Message,service_name=''):
+def showAvailableServer(service_code, update: Message,service_name=''):
     if service_name == '':
         service_name = serviceOps.getServiceName(service_code)
-    buttons = await serviceOps.getServerListButtonFor(service_name)
+    buttons = serviceOps.getServerListButtonFor(service_name)
     if buttons is None or len(buttons) == 0:
         return bot.reply_message(
             update.chat_id, update.message_id,
@@ -48,12 +48,14 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
                                    provider=provider)
     if s_price>=999:
         # The price when it fails to get the actual price
+        # TODO: Use a better method to check error in servers
         logger.error("Failed getting number for " + service_name)
-        bot.send_message(chat_id, "Sorry there was an issue getting your number for " +service_name +",\nDevelopers are notified about this and will come back to you")
+        resp = f"Sorry there was an issue getting your number for {service_name}"
+        bot.send_message(chat_id,resp+"\nTry other servers or try again after")
         return         
-    user_balance = reception_api.see_balance(user_id=chat_id)
-    if float(user_balance) < float(s_price):
-        resp = f"Sorry, {user_firstName} your balance is {user_balance:.2f}, and the price for this service is {s_price}"
+    user_balance = float(reception_api.see_balance(user_id=chat_id))
+    if user_balance < float(s_price):
+        resp = f"Sorry {user_firstName}, your balance is {user_balance:.2f}, and the price for this service is {s_price}"
         bot.send_message(chat_id, resp)
         return BalanceHandler().openPortal(user_id=chat_id)
     try:
@@ -85,7 +87,7 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
         # OTP is cancelled or Expired
         response += "\n is Canceled or Expired"
         #user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
-        reception_api.add_orders(user_id,f"{s_name} CANCELED", -int(price))
+        reception_api.add_orders(user_id,f"{s_name} CANCELED", -1*float(price))
         response += "\n And money refunded."
         inline_button = [[{
             "text":"Buy Again",

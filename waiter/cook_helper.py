@@ -253,7 +253,7 @@ class serviceOperation:
     @staticmethod
     def cancelPhone(server, access_id) -> bool:
         """Returns True if successfully canceled"""
-        return cookAPI().cancel_phone(server, access_id) == 'true'
+        return cookAPI().cancel_phone(server, access_id)
 
     @staticmethod
     def list_items_with_commands(service_lis: list[str]) -> str:
