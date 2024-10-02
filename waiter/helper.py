@@ -19,15 +19,15 @@ def report_reception():
     data = reception_api.get_report()
     resp = ''
     for i in data.keys():
-        resp += (f"{i}\nToday  {data[i]['Today']}"
-                 f"\nOverall {data[i]['Overall']}\n\n")
+        resp += (f"{i}\nToday :{int(data[i]['Today'])}"
+                 f"\nOverall :{int(data[i]['Overall'])}\n\n")
     return resp
 
 def report_balance():
     balance = get_all_balance()
     resp = ''
     for server,bal in balance.items():
-        resp += f"{server}: {bal}\n"
+        resp += f"{server}: {bal:.2f}\n"
     return resp
 
 def loadTemplate(filename):
