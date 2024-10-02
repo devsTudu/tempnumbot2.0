@@ -14,6 +14,7 @@ COOK_URL = "https://fastapi-tempnumbot.onrender.com"
 MENU_LIST = path.join(path.dirname(path.realpath(__file__)), "menu.txt")
 profit_rate = int(getenv("PROFIT_RATE")) if getenv("PROFIT_RATE") else 30
 SALES_PRICE = lambda x: int(float(x) * (1 + profit_rate / 100) + 1)
+TEMPLATES = path.join(path.dirname(__file__), "templates")
 
 
 class cookAPI:
@@ -136,7 +137,7 @@ class serviceOperation:
                 data_to_load = chunk_df
 
                 # Export the chunk to a txt file, converting DataFrame to string representation
-                with open(f"templates/page{i + 1}.txt", "w", encoding='utf-8') as f:
+                with open(path.join(TEMPLATES , f"page{i + 1}.txt"), "w", encoding='utf-8') as f:
                     f.write("\n".join(data_to_load))
 
         if not path.isfile(file_address):
