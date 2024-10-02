@@ -13,14 +13,13 @@ from sqlalchemy import (
     Date,
     Text,
     TIMESTAMP,
-    UniqueConstraint,
     ForeignKey,
     func
 )
 
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import IntegrityError
-
+import pymysql
 
 Base = declarative_base()
 

@@ -5,15 +5,15 @@ from telegram.bot import bot, logger
 from telegram.models import Message,CallbackQuery
 
 
-from reception.main import reception_api
 from reception.bank import reply_for_utr
 
 #Variable Declaration
-templates_dir = "templates/"
+module_dir = path.dirname(path.realpath(__file__))
+templates_dir = path.join(module_dir, "templates")
 
 
 def loadTemplate(filename):
-    with open(templates_dir + filename, 'r', encoding='utf-8') as file:
+    with open(path.join(templates_dir,filename), 'r', encoding='utf-8') as file:
         return file.read()
 
 class BalanceHandler:
@@ -53,8 +53,8 @@ class ShowServices:
         } for button_text, callback_data in row] for row in self.buttons]
 
     def _load_page(self, filename):
-        with open(self.templates_dir + filename, 'r',encoding='utf-8') as file:
-            return file.read()
+        return loadTemplate(filename)
+
 
     def get_button_rows(self, max_buttons_per_row=5):
         """

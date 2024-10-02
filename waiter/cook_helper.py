@@ -1,3 +1,5 @@
+import pytest
+
 from cook.models import phone_detail, priceResponse
 from telegram.bot import logger
 from os import getenv, path
@@ -9,15 +11,15 @@ from requests import get
 load_dotenv()
 API_KEY = getenv("COOK_API_TOKEN")
 COOK_URL = "https://fastapi-tempnumbot.onrender.com"
-MENU_LIST = "menu.txt"
+MENU_LIST = path.join(path.dirname(path.realpath(__file__)), "menu.txt")
 profit_rate = int(getenv("PROFIT_RATE")) if getenv("PROFIT_RATE") else 30
-SALES_PRICE = lambda x: int(float(x)*(1+profit_rate/100)+1)
+SALES_PRICE = lambda x: int(float(x) * (1 + profit_rate / 100) + 1)
 
 
 class cookAPI:
     headers = {
-      'accept': 'application/json',
-      'x-api-key': API_KEY
+        'accept': 'application/json',
+        'x-api-key': API_KEY
     }
 
     def __init__(self) -> None:
@@ -26,96 +28,94 @@ class cookAPI:
         # if req.status_code == 200:
         #    logger.info(f'Cook server is wake at {COOK_URL}')
         pass
-    
+
     @staticmethod
-    def get_serviceList()->list:
+    def get_serviceList() -> list:
         """Returns the list of services available, from the cook api"""
-        data = get(COOK_URL+"/downloadList")
+        data = get(COOK_URL + "/downloadList")
         menu = list(data.json().keys())
         return menu
 
     @classmethod
-    async def get_server_list(cls,service_name)->list[dict]:
-        
+    def get_server_list(cls, service_name) -> list[dict]:
+
         """Returns the json list of all the servers, available for the service_name, else returns none"""
-        prices = await cook_local.get_price_from_name(service_name)
-        if isinstance(prices,priceResponse):
+        prices = cook_local.get_price_from_name(service_name)
+        if isinstance(prices, priceResponse):
             return map(vars, prices.offers)
         else:
             logger.error(f"Error fetching offers for {service_name}")
             return []
-            
 
     @classmethod
-    def get_phone_no(cls,server,service_name,provider):
+    def get_phone_no(cls, server, service_name, provider):
         """Returns dict{phone,access_id,server}"""
-        phone = cook_local.get_phone_number(server=server,service_name=service_name,provider=provider)
-        if isinstance(phone,phone_detail):
+        phone = cook_local.get_phone_number(server=server, service_name=service_name, provider=provider)
+        if isinstance(phone, phone_detail):
             try:
                 data = {
-                    'phone':phone.phone,
-                    'access_id':phone.access_id,
-                    'server':server
+                    'phone': phone.phone,
+                    'access_id': phone.access_id,
+                    'server': server
                 }
                 return data
             except KeyError as k:
                 msg = f"Error fetching number,{k}"
                 logger.fatal(msg)
 
-       
     @classmethod
-    def check_for_otp(cls,server,access_id):
+    def check_for_otp(cls, server, access_id):
         """returns otp if received, 0 if waiting, -1 otherwise"""
-        update = cook_local.get_updates(server,access_id)
-        if isinstance(update,str):
+        update = cook_local.get_updates(server, access_id)
+        if isinstance(update, str):
             if 'wait' in update:
                 return 0
             if 'cancel' in update:
                 return -1
             return update
 
-    
     @classmethod
-    def cancel_phone(cls,server,access_id):
-        iscanceled = cook_local.cancel_phone(server,access_id)
-        if not iscanceled:    
+    def cancel_phone(cls, server, access_id):
+        iscanceled = cook_local.cancel_phone(server, access_id)
+        if not iscanceled:
             logger.warning(f"Error canceling @ {server} , {access_id}")
         return iscanceled
-        
 
-def encodeList(lis)->dict:
+
+def encodeList(lis) -> dict:
     """Returns the dictionary with unique 7 char key for the service name"""
     import hashlib
     name_dict = {}
     for name in lis:
-      name = name.strip()
-      hash_object = hashlib.sha256(name.encode())
-      key = hash_object.hexdigest()[:7]  # Hash and truncate to 7 characters
-      name_dict[key] = name
+        name = name.strip()
+        hash_object = hashlib.sha256(name.encode())
+        key = hash_object.hexdigest()[:7]  # Hash and truncate to 7 characters
+        name_dict[key] = name
     return name_dict
 
 
 class serviceOperation:
     def __init__(self, file_address: str = MENU_LIST):
         self.file_address = file_address
+
         def read_menu():
-            with open(file_address,'r',encoding="utf-8") as file:
+            with open(file_address, 'r', encoding="utf-8") as file:
                 lis = file.readlines()
             return encodeList(lis)
 
         def updateAllDetails():
             """Download the Menu, and make the database"""
             lis = cookAPI().get_serviceList()
-            with open(self.file_address,'w',encoding='utf-8') as file:
-              for i in lis:
-                file.write(i+'\n')
+            with open(self.file_address, 'w', encoding='utf-8') as file:
+                for i in lis:
+                    file.write(i + '\n')
             self.database = encodeList(lis)
 
         def updatePages():
             menu = self.database
             service_list = []
             for i in menu:
-                service = "➤" + (menu[i].replace('.',' .')) + " /ser_" +i
+                service = "➤" + (menu[i].replace('.', ' .')) + " /ser_" + i
                 service_list.append(service)
 
             # Number of chunks
@@ -136,18 +136,17 @@ class serviceOperation:
                 data_to_load = chunk_df
 
                 # Export the chunk to a txt file, converting DataFrame to string representation
-                with open(f"templates/page{i+1}.txt", "w",encoding='utf-8') as f:
+                with open(f"templates/page{i + 1}.txt", "w", encoding='utf-8') as f:
                     f.write("\n".join(data_to_load))
-        
+
         if not path.isfile(file_address):
-            logger.log(1,"Menu data Updating from Cook")
+            logger.log(1, "Menu data Updating from Cook")
             updateAllDetails()
             updatePages()
-            
+
         else:
             self.database = read_menu()
 
-    
     def fuzzy_search(self, query_term, threshold=80):
         """
       Performs a fuzzy search on a list of service names based on a query term.
@@ -196,72 +195,74 @@ class serviceOperation:
             return d[-1][-1]
 
         matches = []
-        for code,name in list(self.database.items()):
+        for code, name in list(self.database.items()):
             distance = levenshtein(query_term.lower(),
-                                        name.lower())
+                                   name.lower())
             similarity = ((len(query_term) - distance) / len(query_term)) * 100
             if (similarity >= threshold) or (query_term.lower() in name.lower()):
-                matches.append([similarity,name,code])
-        match_ordered = sorted(matches,key=lambda row:row[0],reverse=True)
+                matches.append([similarity, name, code])
+        match_ordered = sorted(matches, key=lambda row: row[0], reverse=True)
         if len(matches) == 0:
             return "Not found"
         return match_ordered
 
-
-    def getServiceName(self,service_code)->str:
+    def getServiceName(self, service_code) -> str:
         if service_code in self.database:
             return self.database[service_code]
-    
-    async def getServerListButtonFor(self,service_name)->list[list]:
+
+    @staticmethod
+    def getServerListButtonFor(service_name) -> list[list]:
         """Returns the list of servers available for the given service code"""
         # service_name = self.database[service_code]
-        lis = await cookAPI().get_server_list(service_name=service_name)
+        lis = cookAPI().get_server_list(service_name=service_name)
         try:
             # return sorted(dicts, key=lambda x: x[key])
-            lis = sorted(lis,key=lambda x:x['cost'])
+            lis = sorted(lis, key=lambda x: x['cost'])
         except:
             pass
         buttons = []
         if lis:
-            for i,offer in enumerate(lis):
-                btn = [(f"🌐SERVER {i+1} with cost:{SALES_PRICE(offer['cost'])}💰",
-                       f"buy_{offer['server']}_{service_name}_{offer['provider']}")]
+            for i, offer in enumerate(lis):
+                btn = [(f"🌐SERVER {i + 1} with cost:{SALES_PRICE(offer['cost'])}💰",
+                        f"buy_{offer['server']}_{service_name}_{offer['provider']}")]
                 buttons.append(btn)
         return buttons
-    
+
     @staticmethod
-    def fetchPrice(server,service_name,provider)->float:
+    def fetchPrice(server, service_name, provider) -> float:
         lis = cookAPI().get_server_list(service_name=service_name)
         for i in lis:
-            if i['server']==server and i['provider'] == provider:
-                return SALES_PRICE(i['cost']) 
-        logger.critical(f"Error price fetching,{server,service_name,provider}")
+            if i['server'] == server and i['provider'] == provider:
+                return SALES_PRICE(i['cost'])
+        logger.critical(f"Error price fetching,{server, service_name, provider}")
         return 9999
-        
+
     @staticmethod
-    def getPhoneNumber(service_name:str,server:str,provider:str='Any'):
+    def getPhoneNumber(service_name: str, server: str, provider: str = 'Any'):
         """Use the Cook API to fetch the phone number and access_id"""
         if server not in ['Fast', 'Tiger', '5Sim', 'Bower']:
             raise Exception("Invalid Server used to fetch phone number")
         else:
-            return cookAPI().get_phone_no(server,service_name,provider)
-           
-            
+            return cookAPI().get_phone_no(server, service_name, provider)
+
     @staticmethod
-    def getOTP( server,actCode):
+    def getOTP(server, actCode):
         """Make API Calls to get the OTP, return -1 if canceled, 0 for waiting, and otp if sucess"""
-        return cookAPI().check_for_otp(server=server,access_id=actCode)
+        return cookAPI().check_for_otp(server=server, access_id=actCode)
 
     @staticmethod
-    def cancelPhone(server,access_id)->bool:
+    def cancelPhone(server, access_id) -> bool:
         """Returns True if successfully canceled"""
-        return cookAPI().cancel_phone(server,access_id) == 'true'
+        return cookAPI().cancel_phone(server, access_id)
 
     @staticmethod
-    def list_items_with_commands(service_lis:list[str])->str:
+    def list_items_with_commands(service_lis: list[str]) -> str:
         encoded = encodeList(service_lis)
-        resp = "".join(f"\n/ser_{code} {name}"for code,name in encoded.items())
+        resp = "".join(f"\n/ser_{code} {name}" for code, name in encoded.items())
         return resp
+
+
+serviceOps = serviceOperation()
 
 
 class testCases:
@@ -282,14 +283,41 @@ class testCases:
             p = input("Provider:")
             ser = input("server :")
             try:
-                print(self.x.fetchPrice(server=ser,service_name=s,provider=p))
+                print(self.x.fetchPrice(server=ser, service_name=s, provider=p))
             except KeyError:
                 print("Wrong Key")
-    
 
 
-serviceOps = serviceOperation()
+server_operations = [
+    ('Fast', 'Any', 'Probo'),
+    ('Tiger', 'Any', 'Probo'),
+    ('5Sim', 'virtual21', 'Alipay'),
+]
+
+
+@pytest.mark.parametrize('server, provider, name', server_operations)
+def test_operations(server, provider, name):
+    buttons = serviceOps.getServerListButtonFor(name)
+    print(buttons)
+    assert isinstance(buttons, list)
+
+    price = serviceOps.fetchPrice(server, name, provider)
+    assert isinstance(price, int), "Fetching Price"
+
+    # Get phone number
+    phone = serviceOps.getPhoneNumber(name, server, provider)
+    assert isinstance(phone, dict), "Generating Phone Number"
+
+    if isinstance(phone, phone_detail):
+        print(phone)
+        update = serviceOps.getOTP(server, phone.access_id)
+        print(update)
+        assert isinstance(update, int), "Fetching OTP"
+
+        cancel = serviceOps.cancelPhone(server, phone.access_id)
+        assert isinstance(cancel, bool), "Cancelling Phone"
+        assert cancel, "Couldnot cancel"
+
 
 if __name__ == '__main__':
     testCases(serviceOps).test_see_price()
-    
