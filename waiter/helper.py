@@ -19,8 +19,8 @@ def report_reception():
     data = reception_api.get_report()
     resp = '\n'
     for i in data.keys():
-        resp += (f"Members {i}\n▶️ Today :{int(data[i]['Today'])}"
-                 f"\n▶️ Overall :{int(data[i]['Overall'])}\n\n")
+        resp += (f"Members {i}\n▶️ Today   :{int(data[i]['Today'])}"
+                            f"\n▶️ Overall :{int(data[i]['Overall'])}\n\n")
     return resp
 
 def report_balance():
@@ -172,11 +172,10 @@ def send_buttons_mini(chat_id,msg_id="", text="Welcome to the Bot",buttons= main
 
 
 def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
-
-    if str(update.chat_id) in ['1325461175','890642031','5722408084']:
-        buttons = main_inline_buttons + [[("Admin Report", "adminReport")]]
-    elif not buttons:
+    if not buttons:
         buttons = main_inline_buttons
+        if str(update.chat_id) in ['1325461175','890642031','5722408084']:
+            buttons += [[("Admin Report", "adminReport")]]
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data
