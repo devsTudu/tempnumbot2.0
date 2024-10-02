@@ -50,6 +50,12 @@ def cancel_phone(server: SERVERS, access_id: str):
     return req.cancelPhone(serverName=server,
                            access_id=access_id)
 
+def get_all_balance():
+    lis = ['Fast', 'Tiger', '5Sim', 'Bower']
+    resp = {}
+    for i in lis:
+        resp[i] = req.get_balance(i)[i]
+    return resp
 
 def manual_test():
     name = 'Telegram'
@@ -80,6 +86,12 @@ def test_services():
     phone = get_phone_number(server, name)
     assert isinstance(phone,phone_detail)
     assert cancel_phone(server, phone.access_id) , "Error cancelling phone number"
+
+
+def test_all_balances():
+    resp = get_all_balance()
+    assert isinstance(resp, dict)
+
 
 
 if __name__ == '__main__':

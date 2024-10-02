@@ -1,6 +1,6 @@
 from .helper_phone import otpUpdateQuery,requestNumber
 from telegram.models import CallbackQuery
-from .helper import default_query_update, services, BalanceHandler,loadTemplate
+from .helper import default_query_update, services, BalanceHandler,loadTemplate,report_balance,report_reception
 from .cook_helper import serviceOps
 from telegram.bot import bot, logger
 from reception.main import reception_api
@@ -85,6 +85,9 @@ def answer_to(request):
     elif "wantFavServices" in q:
         lis = reception_api.get_favourite_services(user_id=user_id)
         response = serviceOps.list_items_with_commands(lis)
+    elif "adminReport" in q:
+        response = "Balances \n" + str(report_balance())
+        response += "\n\n Transactions \n" + str(report_reception())
     else:
         response = "You clicked for " + query.data
         #These will change the message text for the queries

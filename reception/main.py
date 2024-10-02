@@ -8,7 +8,7 @@ load_dotenv()
 from sqlalchemy import (
     create_engine,
     Column,
-    Integer,BigInteger,
+    Integer, BigInteger,
     Float,
     Date,
     Text,
@@ -21,6 +21,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import IntegrityError
 
 Base = declarative_base()
+today = datetime.datetime.today()
 
 
 class User(Base):
@@ -49,11 +50,13 @@ class Service(Base):
     price = Column(Float)
     service_code = Column(Text, unique=True)
 
+
 class Recharges(Base):
     __tablename__ = "recharge_list"
-    utr_no = Column(Text,primary_key=True)
+    utr_no = Column(Text, primary_key=True)
     amount = Column(Integer)
     userid = Column(BigInteger, ForeignKey("user_info.userid"))
+
 
 class UserDatabase:
     def __init__(self, connection_string):
@@ -103,53 +106,108 @@ class UserDatabase:
             session.add(new_service)
             session.commit()
 
-    
     def get_service_by_code(self, service_code):
         with self.Session() as session:
             return session.query(Service).filter_by(service_code=service_code).first()
 
-    def get_most_buyed(self,user_id):
+    def get_most_buyed(self, user_id):
         with self.Session() as session:
             lis = session.query(Transaction.transaction_detail,
-                          func.count(Transaction.transaction_detail
-                                     ).label('count')
-                          ).filter(Transaction.userid == user_id
-                                   ).filter(Transaction.amount_credited < 0).group_by(Transaction.transaction_detail
-                                   ).order_by(func.count(Transaction.transaction_detail).desc()
-                                              ).all()
-            
+                                func.count(Transaction.transaction_detail
+                                           ).label('count')
+                                ).filter(Transaction.userid == user_id
+                                         ).filter(Transaction.amount_credited < 0).group_by(
+                Transaction.transaction_detail
+                ).order_by(func.count(Transaction.transaction_detail).desc()
+                           ).all()
+
             return [item.transaction_detail for item in lis]
-    def add_recharge(self,user_id,amount,utr):
+
+    def add_recharge(self, user_id, amount, utr):
         with self.Session() as session:
             new_recharge = Recharges(userid=user_id, amount=abs(amount), utr_no=str(utr))
-            log(1,f'Checking recharge at {utr}')
+            log(1, f'Checking recharge at {utr}')
             try:
                 session.add(new_recharge)
                 session.commit()
-                self.record_transaction(user_id,'Recharge',abs(amount))
+                self.record_transaction(user_id, 'Recharge', abs(amount))
                 return True
             except IntegrityError as i:
                 return False
             except Exception as e:
-                log(2,"Recharge Recording Issue")
+                log(2, "Recharge Recording Issue")
                 raise e
+
+    def get_new_members_joined(self, only_today=False):
+        """
+        This function fetches the number of new members joined today and overall.
+        """
+        with self.Session() as session:
+            overall = session.query(func.count(User.userid))
+            if only_today:
+                return overall.filter(today == User.datejoined).scalar()
+            else:
+                return overall.scalar()
+
+    def get_sales_done(self, only_today=False):
+        """
+        This function retrieves the total sales (amount credited) done today and overall.
+        """
+
+        with (self.Session() as session):
+            overall = session.query(func.sum(Transaction.amount_credited)
+                                    ).filter("Recharge" != Transaction.transaction_detail)
+            if only_today:
+                overall = overall.filter(Transaction.transaction_date >= today)
+            val = overall.scalar() or 0.0
+
+            return -1 * val
+
+    def get_total_recharge(self, only_today=False):
+        """
+        This function retrieves the total recharge amount for all time and today.
+        """
+        with self.Session() as session:
+            overall = session.query(func.sum(Transaction.amount_credited)
+                                    ).filter("Recharge" == Transaction.transaction_detail)
+            if only_today:
+                overall = overall.filter(Transaction.transaction_date >= today)
+            return overall.scalar() or 0.0
+
+    def get_all_data_today_and_overall(self):
+        """
+        This function combines all data retrieval into a single dictionary.
+        """
+        data = {
+            'Joined': {'Today': self.get_new_members_joined(only_today=True),
+                       'Overall': self.get_new_members_joined(only_today=False)},
+            'Recharge': {'Today': self.get_total_recharge(only_today=True),
+                         'Overall': self.get_total_recharge(only_today=False)},
+            'Sales': {'Today': self.get_sales_done(only_today=True),
+                      'Overall': self.get_sales_done(only_today=False)}
+        }
+
+        return data
+
 
 class api_point:
     def __init__(self) -> None:
-        try:    
+        try:
             postgreurl = getenv("POSTGRESQL_DB")
+            self.user_db = UserDatabase(postgreurl)
         except BaseException as e:
             log(1, "Error Connecting with database")
             raise e
-        finally:
-            self.user_db = UserDatabase(postgreurl)
+
+    def get_report(self):
+        return self.user_db.get_all_data_today_and_overall()
 
     def see_balance(self, user_id) -> float:
         return float(self.user_db.get_user_balance(user_id))
 
     def add_balance(self, user_id, amount) -> bool:
         try:
-            self.user_db.record_transaction(user_id,'Recharge',amount)
+            self.user_db.record_transaction(user_id, 'Recharge', amount)
         except Exception:
             log(2, f"Unable to recharge {user_id} in the Database")
             return False
@@ -162,7 +220,7 @@ class api_point:
             return True
         except Exception as e:
             log(
-                2, f"Unable to record txns {user_id,transaction_detail,cost}"
+                2, f"Unable to record txns {user_id, transaction_detail, cost}"
             )
             print(e)
             return False
@@ -182,9 +240,8 @@ class api_point:
         most_bought = self.user_db.get_most_buyed(user_id)
         return most_bought
 
-    def record_recharge(self,user_id,utr,amount:float):
-        return self.user_db.add_recharge(user_id,amount,utr)
-        
+    def record_recharge(self, user_id, utr, amount: float):
+        return self.user_db.add_recharge(user_id, amount, utr)
 
 
 reception_api = api_point()
@@ -208,8 +265,11 @@ def test_debasish():
     print(reception_1.see_transactions(myid))
 
 
+def test_report():
+    resp = reception_api.get_report()
+    print(resp)
+    assert isinstance(resp, dict)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     test_debasish()
-
-

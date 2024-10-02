@@ -6,11 +6,29 @@ from telegram.models import Message,CallbackQuery
 
 
 from reception.bank import reply_for_utr
+from reception.main import reception_api
+from cook.main import get_all_balance
 
 #Variable Declaration
 module_dir = path.dirname(path.realpath(__file__))
 templates_dir = path.join(module_dir, "templates")
 
+
+#Admin Report
+def report_reception():
+    data = reception_api.get_report()
+    resp = ''
+    for i in data.keys():
+        resp += (f"{i}\nToday  {data[i]['Today']}"
+                 f"\nOverall {data[i]['Overall']}\n\n")
+    return resp
+
+def report_balance():
+    balance = get_all_balance()
+    resp = ''
+    for server,bal in balance.items():
+        resp += f"{server}: {bal}\n"
+    return resp
 
 def loadTemplate(filename):
     with open(path.join(templates_dir,filename), 'r', encoding='utf-8') as file:
@@ -153,7 +171,12 @@ def send_buttons_mini(chat_id,msg_id="", text="Welcome to the Bot",buttons= main
     bot.send_request('sendMessage', payload)
 
 
-def send_buttons(update: Message, text="Welcome to the Bot",buttons= main_inline_buttons):
+def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
+
+    if str(update.chat_id) in ['1325461175','890642031','5722408084']:
+        buttons = main_inline_buttons + [[("Admin Report", "adminReport")]]
+    elif not buttons:
+        buttons = main_inline_buttons
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data
@@ -184,6 +207,7 @@ def default_query_update(response:str,query:CallbackQuery):
         'reply_markup': json.dumps({'inline_keyboard': inline_keyboard})
     }
     return bot.send_request('editMessageText', data)
+
 
 
 services = ShowServices()
