@@ -9,7 +9,7 @@ from reception.main import reception_api
 class Commands:
     def __init__(self,update:Message) -> None:
         self.update = update
-        self.name = update.user_username
+        self.name = update.user_first_name
         self.user_id = update.user_id
         self.commands_map ={
             "/start":self.start,

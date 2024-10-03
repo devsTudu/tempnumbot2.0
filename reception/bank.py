@@ -6,6 +6,7 @@ from .main import reception_api
 
 load_dotenv()
 
+# Todo : Add Admin feature to change the QR Code and the credentials
 def check_amount_received(utr_no):
     """To check and validate for any recharge, returns False if no amount received"""
     current_datetime = datetime.datetime.now()

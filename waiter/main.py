@@ -11,7 +11,6 @@ def workOn(request):
         print(request)
         logger.warning("Unusual Request")
 
-
 #Set the Webhook
 def setWebhook(url):
     url =  (url.split(sep="/"))[2]

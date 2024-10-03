@@ -48,7 +48,6 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
                                    provider=provider)
     if s_price>=999:
         # The price when it fails to get the actual price
-        # TODO: Use a better method to check error in servers
         logger.error("Failed getting number for " + service_name)
         resp = f"Sorry there was an issue getting your number for {service_name}"
         bot.send_message(chat_id,resp+"\nTry other servers or try again after")
@@ -86,8 +85,7 @@ def otpUpdateQuery(phoneNo, act_code, user_id, message_id, s_name, price, n,serv
     if otp == -1:
         # OTP is cancelled or Expired
         response += "\n is Canceled or Expired"
-        #user_db.record_order(user_id, f"{s_name} CANCELED", -int(price))
-        reception_api.add_orders(user_id,f"{s_name} CANCELED", -1*float(price))
+        reception_api.add_orders(user_id,f"{s_name} CANCELED", abs(float(price)))
         response += "\n And money refunded."
         inline_button = [[{
             "text":"Buy Again",
