@@ -212,15 +212,15 @@ class api_point:
             log(2, f"Unable to recharge {user_id} in the Database")
             return False
 
-    def add_orders(self, user_id, transaction_detail, cost):
+    def add_orders(self, user_id, transaction_detail, credit_to_user):
         try:
             self.user_db.record_transaction(
-                user_id, transaction_detail, cost
+                user_id, transaction_detail, credit_to_user
             )
             return True
         except Exception as e:
             log(
-                2, f"Unable to record txns {user_id, transaction_detail, cost}"
+                2, f"Unable to record txns {user_id, transaction_detail, credit_to_user}"
             )
             print(e)
             return False
