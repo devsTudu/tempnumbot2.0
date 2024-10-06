@@ -1,13 +1,11 @@
 from json import JSONDecodeError
 import json
-from os import getenv,getcwd,path
+from os import getcwd,path
 from typing import Union
 
 from requests import get
 from .models import (serviceInfo, countryInfo, Error)
-from dotenv import load_dotenv
-
-load_dotenv()
+from secrets_handler import VARIABLES
 
 # Variable Declaration
 BASE_URL = {
@@ -17,10 +15,10 @@ BASE_URL = {
 }
 
 TOKENS = {
-    'fast': getenv('FASTSMS_API'),
-    'bower': getenv('BOWER_API'),
-    'tiger': getenv('TIGER_API'),
-    '5Sim': getenv('FIVESIM_API')
+    'fast': VARIABLES['FASTSMS_API'],
+    'bower': VARIABLES['BOWER_API'],
+    'tiger': VARIABLES['TIGER_API'],
+    '5Sim': VARIABLES['FIVESIM_API']
 }
 
 

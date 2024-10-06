@@ -1,9 +1,6 @@
 from logging import log
-from os import getenv
-from dotenv import load_dotenv
+from secrets_handler import VARIABLES
 import datetime
-
-load_dotenv()
 
 from sqlalchemy import (
     create_engine,
@@ -145,7 +142,7 @@ class UserDatabase:
         with self.Session() as session:
             overall = session.query(func.count(User.userid))
             if only_today:
-                return overall.filter(today == User.datejoined).scalar()
+                return overall.filter(today.date == User.datejoined).scalar()
             else:
                 return overall.scalar()
 
@@ -193,7 +190,7 @@ class UserDatabase:
 class api_point:
     def __init__(self) -> None:
         try:
-            postgreurl = getenv("POSTGRESQL_DB")
+            postgreurl = VARIABLES["POSTGRESQL_DB"]
             self.user_db = UserDatabase(postgreurl)
         except BaseException as e:
             log(1, "Error Connecting with database")

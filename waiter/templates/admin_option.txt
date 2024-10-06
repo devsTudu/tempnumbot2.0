@@ -1,0 +1,5 @@
+Use these commands to change settings
+
+/update_payment -> To update the payment system
+
+/update_prices -> Update the profit margin

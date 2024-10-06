@@ -1,18 +1,26 @@
 import os
 from dotenv import load_dotenv
 required_secrets = [
+    # General
     'BOT_TOKEN',
-    'COOK_API_TOKEN',
     'POSTGRESQL_DB',
-    'USE_LITE_DB',
-    'PROFIT_RATE'
+    'PROFIT_RATE',
+    #Cook - Server Realted
+    'FASTSMS_API',
+    'FIVESIM_API',
+    'TIGER_API',
+    'BOWER_API',
+    # Reception - Bank Related
+    'BHARATPE_MERCHANT_ID',
+    'BHARATPE_TOKEN'
 ]
 
-
+VARIABLES = {}
 
 def check_required_secrets():
     load_dotenv()
     for variable in required_secrets:
-        if not os.environ.get(variable):
+        secret = os.environ.get(variable)
+        if not secret:
             secret = input(f"Enter {variable}:")
-            os.environ[variable] = secret
+        VARIABLES[variable] = secret

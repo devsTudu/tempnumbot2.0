@@ -1,4 +1,5 @@
 from os import path
+import os
 import json
 
 from telegram.bot import bot, logger
@@ -12,7 +13,9 @@ from cook.main import get_all_balance
 #Variable Declaration
 module_dir = path.dirname(path.realpath(__file__))
 templates_dir = path.join(module_dir, "templates")
+ADMINS = ['1325461175','890642031','5722408084']
 
+isAdmin = lambda x:str(x) in ADMINS
 
 #Admin Report
 def report_reception():
@@ -41,11 +44,15 @@ class BalanceHandler:
             self.img = image_file
         else:
             raise Warning("QR Code for payment is not present")
-        
+            
     def openPortal(self, user_id):
         #Here will go the qr code and upi id
-        resp = "Please enter the utr after payment"
-        return bot.send_photo(self.img, resp, user_id)
+        if path.isfile(self.img):
+            resp = "Please enter the utr after payment"
+            return bot.send_photo(self.img, resp, user_id)
+        else:
+            raise Warning("QR Code for payment is not present")
+        
 
     def checkUTR(self, message_id, user_id, utr: int):
         response = reply_for_utr(utr,user_id)
@@ -174,8 +181,8 @@ def send_buttons_mini(chat_id,msg_id="", text="Welcome to the Bot",buttons= main
 def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
     if not buttons:
         buttons = main_inline_buttons
-        if str(update.chat_id) in ['1325461175','890642031','5722408084']:
-            buttons =main_inline_buttons + [[("Admin Report", "adminReport")]]
+        if isAdmin(update.chat_id):
+            buttons =main_inline_buttons + [[("Bot Report", "adminReport"),("Bot Settings","adminSetting")]]
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data
@@ -208,5 +215,39 @@ def default_query_update(response:str,query:CallbackQuery):
     return bot.send_request('editMessageText', data)
 
 
+def forceReply(chat_id,message): 
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "reply_markup": {
+            "force_reply": True
+        }
+    }
+    return bot.send_request('sendMessage',payload)
 
 services = ShowServices()
+
+
+def switch_files(file1_path, file2_path):
+    """
+    Switches two files, deleting the first one and renaming the second to its name.
+
+    Args:
+        file1_path: The path to the first file to be deleted.
+        file2_path: The path to the second file to be renamed.
+    """
+
+    try:
+        # Check if both files exist
+        if not os.path.exists(file1_path) or not os.path.exists(file2_path):
+            raise FileNotFoundError("One or both files do not exist.")
+
+        # Delete the first file
+        os.remove(file1_path)
+
+        # Rename the second file to the first file's name
+        os.rename(file2_path, file1_path)
+
+        print(f"Files switched successfully: {file1_path} and {file2_path}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")

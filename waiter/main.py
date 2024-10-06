@@ -4,9 +4,17 @@ from .message_handler import respond_to
 
 def workOn(request):
     if 'callback_query' in request:
-        return answer_to(request)
+        try:
+            return answer_to(request)
+        except Exception as e:
+            logger.exception("Error processing callback req")
+            print(request)
     elif 'message' in request:
-        return respond_to(request)
+        try:
+            return respond_to(request)       
+        except Exception as e:
+            logger.exception("Error processing message req")
+            print(request)
     else:
         print(request)
         logger.warning("Unusual Request")
