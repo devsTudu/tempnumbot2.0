@@ -1,9 +1,11 @@
-from .helper import send_buttons,services,BalanceHandler, loadTemplate
+from .helper import send_buttons,services,BalanceHandler, loadTemplate,isAdmin,forceReply
 from .helper_phone import showAvailableServer
 from telegram.bot import bot,logger
-from .cook_helper import serviceOps
+import waiter.cook_helper as ch
 from telegram.models import Message
 from reception.main import reception_api
+from secrets_handler import VARIABLES
+from .admin_setup import handle_admin
 
 #Command Handler
 class Commands:
@@ -18,7 +20,9 @@ class Commands:
             "/recharge":self.recharge,
             "/seefav":self.getfavlist,
             "/seehist":self.checkhistory,
-            "/referal":self.getreferral
+            "/referal":self.getreferral,
+            "/update_prices":self.update_price,
+            "/update_payment":self.update_payment
         }
         
     def run(self):
@@ -59,12 +63,28 @@ class Commands:
     
     def getfavlist(self):
         lis = reception_api.get_favourite_services(user_id=self.user_id)
-        resp = serviceOps.list_items_with_commands(lis)
+        resp = ch.serviceOps.list_items_with_commands(lis)
         return send_buttons(self.update,
                             "Your Favourite List appears here\n"
                             +resp)
 
-    
+    def update_price(self):
+        if isAdmin(self.user_id) :    
+            resp = f"Please enter the new profit rate, Current is {VARIABLES['PROFIT_RATE']}"
+            return forceReply(self.user_id,resp)
+        else:
+            return bot.reply_message(self.update.chat_id,
+            self.update.message_id,"Invalid Command")
+
+    def update_payment(self):
+        if isAdmin(self.user_id):    
+            resp = f"Please send me the new QR Code with <BHARATPE_MERCHANT_ID>:<BHARATPE_TOKEN> as caption"
+            return forceReply(self.user_id,resp)
+        else:
+            return bot.reply_message(self.user_id,
+            self.update.message_id,"Invalid Command")
+
+
     def getreferral(self):
         return send_buttons(self.update,"Your referral scores")
         
@@ -77,7 +97,16 @@ def respond_to(request):
                     update.user_first_name, update.text)
     except Exception as e:
         logger.critical("Invalid Message request")
-        raise e from None
+        raise e
+    try:
+        # Addition for the admin feature
+        user_id = request['message']['from']['id']
+        if isAdmin(user_id):
+            return handle_admin(request)
+        
+    except Exception as e:
+        pass
+        
     if update.is_command:
         commands = Commands(update=update)
         commands.run()
@@ -93,7 +122,7 @@ def respond_to(request):
 
 #Handle Search Query
 def sendSearchResult(update: Message):
-    result = serviceOps.fuzzy_search(update.text, 50)
+    result = ch.serviceOps.fuzzy_search(update.text, 50)
     if "Not" in result:
         response = "Sorry the search term didn't match with any service we offer"
     else:

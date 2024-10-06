@@ -1,9 +1,6 @@
 import requests
-import os
 import logging
-from dotenv import load_dotenv
-
-load_dotenv()
+from secrets_handler import VARIABLES
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Bot_logger")
@@ -47,4 +44,4 @@ class TelegramBot:
             return requests.post(self.base_url + 'sendPhoto', files=files)
 
 
-bot = TelegramBot(os.environ['BOT_TOKEN'])
+bot = TelegramBot(VARIABLES['BOT_TOKEN'])

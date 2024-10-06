@@ -2,39 +2,31 @@ import pytest
 
 from cook.models import phone_detail, priceResponse
 from telegram.bot import logger
-from os import getenv, path
+from os import path
 from cook import main as cook_local
 from dotenv import load_dotenv
+from secrets_handler import VARIABLES
+import json
 
 from requests import get
 
 load_dotenv()
-API_KEY = getenv("COOK_API_TOKEN")
-COOK_URL = "https://fastapi-tempnumbot.onrender.com"
 MENU_LIST = path.join(path.dirname(path.realpath(__file__)), "menu.txt")
-profit_rate = int(getenv("PROFIT_RATE")) if getenv("PROFIT_RATE") else 30
-SALES_PRICE = lambda x: int(float(x) * (1 + profit_rate / 100) + 1)
+PROFIT_RATE = int(VARIABLES['PROFIT_RATE']) if VARIABLES['PROFIT_RATE'] else 30
+SALES_PRICE = lambda x: int(float(x) * (1 + PROFIT_RATE / 100) + 1)
 TEMPLATES = path.join(path.dirname(__file__), "templates")
 
 
 class cookAPI:
-    headers = {
-        'accept': 'application/json',
-        'x-api-key': API_KEY
-    }
-
     def __init__(self) -> None:
-        # Waking up the Cook Server
-        # req = get(COOK_URL)
-        # if req.status_code == 200:
-        #    logger.info(f'Cook server is wake at {COOK_URL}')
         pass
 
     @staticmethod
     def get_serviceList() -> list:
         """Returns the list of services available, from the cook api"""
-        data = get(COOK_URL + "/downloadList")
-        menu = list(data.json().keys())
+        with open("cook\\menuList.json",'r') as file:
+            data = json.load(file)
+            menu = list(data.keys())
         return menu
 
     @classmethod
