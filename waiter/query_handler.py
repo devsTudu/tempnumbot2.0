@@ -88,7 +88,7 @@ def answer_to(request):
             lis = reception_api.get_favourite_services(user_id=user_id)
             response = serviceOps.list_items_with_commands(lis)
         elif "adminReport" in q:
-            response = "Server Balances 🌐 \n" + str(report_balance())
+            response = "Our Server Balances Now are \n" + str(report_balance())
             response += "\n Reports \n" + str(report_reception())
         elif "adminSetting" in q:
             response = loadTemplate("admin_option.txt")
