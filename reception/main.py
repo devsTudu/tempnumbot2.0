@@ -142,7 +142,7 @@ class UserDatabase:
         with self.Session() as session:
             overall = session.query(func.count(User.userid))
             if only_today:
-                return overall.filter(today.date == User.datejoined).scalar()
+                return overall.filter(today.date() == User.datejoined).scalar()
             else:
                 return overall.scalar()
 
@@ -155,7 +155,7 @@ class UserDatabase:
             overall = session.query(func.sum(Transaction.amount_credited)
                                     ).filter("Recharge" != Transaction.transaction_detail)
             if only_today:
-                overall = overall.filter(Transaction.transaction_date >= today)
+                overall = overall.filter(Transaction.transaction_date >= today.date())
             val = overall.scalar() or 0.0
 
             return -1 * val
@@ -168,7 +168,7 @@ class UserDatabase:
             overall = session.query(func.sum(Transaction.amount_credited)
                                     ).filter("Recharge" == Transaction.transaction_detail)
             if only_today:
-                overall = overall.filter(Transaction.transaction_date >= today)
+                overall = overall.filter(Transaction.transaction_date >= today.date())
             return overall.scalar() or 0.0
 
     def get_all_data_today_and_overall(self):
