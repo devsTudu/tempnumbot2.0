@@ -55,13 +55,17 @@ class BalanceHandler:
         
 
     def checkUTR(self, message_id, user_id, utr: int):
-        response = reply_for_utr(utr,user_id)
+        try:
+            response = reply_for_utr(utr,user_id)
+        except Exception as e:
+            logger.log(e)
+            response = "Something went wrong, try again"
         payload = {
             'chat_id': user_id,
             'text': response,
             "reply_to_message_id": message_id
         }
-        bot.send_request('sendMessage', payload)
+        return bot.send_request('sendMessage', payload)
 
 class ShowServices:
     def __init__(self,templates_dir=templates_dir) -> None:
@@ -182,7 +186,7 @@ def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
     if not buttons:
         buttons = main_inline_buttons
         if isAdmin(update.chat_id):
-            buttons =main_inline_buttons + [[("Bot Report", "adminReport"),("Bot Settings","adminSetting")]]
+            buttons =main_inline_buttons + [[("Admin Report", "adminReport"),("Admin Settings","adminSetting")]]
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data
