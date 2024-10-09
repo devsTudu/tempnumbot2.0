@@ -186,7 +186,7 @@ def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
     if not buttons:
         buttons = main_inline_buttons
         if isAdmin(update.chat_id):
-            buttons =main_inline_buttons + [[("Bot Report", "adminReport"),("Bot Settings","adminSetting")]]
+            buttons =main_inline_buttons + [[("Admin Report", "adminReport"),("Admin Settings","adminSetting")]]
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data
