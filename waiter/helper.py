@@ -55,13 +55,17 @@ class BalanceHandler:
         
 
     def checkUTR(self, message_id, user_id, utr: int):
-        response = reply_for_utr(utr,user_id)
+        try:
+            response = reply_for_utr(utr,user_id)
+        except Exception as e:
+            logger.log(e)
+            response = "Something went wrong, try again"
         payload = {
             'chat_id': user_id,
             'text': response,
             "reply_to_message_id": message_id
         }
-        bot.send_request('sendMessage', payload)
+        return bot.send_request('sendMessage', payload)
 
 class ShowServices:
     def __init__(self,templates_dir=templates_dir) -> None:
