@@ -55,13 +55,17 @@ class BalanceHandler:
         
 
     def checkUTR(self, message_id, user_id, utr: int):
-        response = reply_for_utr(utr,user_id)
+        try:
+            response = reply_for_utr(utr,user_id)
+        except Exception as e:
+            logger.log(3,e)
+            response = "Something went wrong, try again"
         payload = {
             'chat_id': user_id,
             'text': response,
             "reply_to_message_id": message_id
         }
-        bot.send_request('sendMessage', payload)
+        return bot.send_request('sendMessage', payload)
 
 class ShowServices:
     def __init__(self,templates_dir=templates_dir) -> None:
@@ -162,7 +166,15 @@ main_inline_buttons = [[("Buy Number", "wantNumbers"),
                        [("Support", "showSupport")]]
 
 def send_buttons_mini(chat_id,msg_id="", text="Welcome to the Bot",buttons= main_inline_buttons):
-    inline_keyboard = [[{
+    """Send followup message with the buttons
+
+    Args:
+        chat_id (integer): chat id of the receiver
+        msg_id (str, optional): message_id to replace with text. Defaults to "".
+        text (str, optional): the text to replace the message. Defaults to "Welcome to the Bot".
+        buttons (list[list[tuple[str,str]]], optional): Buttons to attach with message. Defaults to main_inline_buttons.
+    """
+    inline_keyboard  = [[{
         'text': button_text,
         'callback_data': callback_data
     } for button_text, callback_data in row] for row in buttons]
@@ -182,7 +194,7 @@ def send_buttons(update: Message, text="Welcome to the Bot",buttons=None):
     if not buttons:
         buttons = main_inline_buttons
         if isAdmin(update.chat_id):
-            buttons =main_inline_buttons + [[("Bot Report", "adminReport"),("Bot Settings","adminSetting")]]
+            buttons =main_inline_buttons + [[("Admin Report", "adminReport"),("Admin Settings","adminSetting")]]
     inline_keyboard = [[{
         'text': button_text,
         'callback_data': callback_data

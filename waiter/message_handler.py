@@ -111,10 +111,10 @@ def respond_to(request):
         commands = Commands(update=update)
         commands.run()
     elif update.text.isdigit():
-        BalanceHandler().checkUTR(update.message_id, update.user_id,
+        return BalanceHandler().checkUTR(update.message_id, update.user_id,
                                   int(update.text))
     elif "/" not in update.text:
-        sendSearchResult(update)
+        return sendSearchResult(update)
     else:
         return bot.reply_message(update.chat_id, update.message_id,
                           "We are working on it")
@@ -129,5 +129,5 @@ def sendSearchResult(update: Message):
         response = "Are you looking for them.."
         for index, element in enumerate(result):
             response += f"\n{index+1} {element[1]} /ser_{element[2]}"
-    bot.send_message(update.chat_id, response)     
+    return bot.send_message(update.chat_id, response)     
 
