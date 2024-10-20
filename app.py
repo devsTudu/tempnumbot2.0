@@ -5,6 +5,7 @@ check_required_secrets()
 
 from flask import Flask, request, Response
 from waiter import main as waiter
+from waiter.helper import report_reception,report_balance
 from telegram.bot import logger
 
 import threading
@@ -42,6 +43,9 @@ def manualset():
         return "url parameter not received"
     return waiter.setmanualhook(url)
 
+@app.route('/checkreport')
+def check_report():
+    return Response([report_balance(),report_reception()])
 
 
 if __name__=='__main__':

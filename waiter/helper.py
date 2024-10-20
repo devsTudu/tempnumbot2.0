@@ -58,7 +58,7 @@ class BalanceHandler:
         try:
             response = reply_for_utr(utr,user_id)
         except Exception as e:
-            logger.log(e)
+            logger.log(3,e)
             response = "Something went wrong, try again"
         payload = {
             'chat_id': user_id,
@@ -166,7 +166,15 @@ main_inline_buttons = [[("Buy Number", "wantNumbers"),
                        [("Support", "showSupport")]]
 
 def send_buttons_mini(chat_id,msg_id="", text="Welcome to the Bot",buttons= main_inline_buttons):
-    inline_keyboard = [[{
+    """Send followup message with the buttons
+
+    Args:
+        chat_id (integer): chat id of the receiver
+        msg_id (str, optional): message_id to replace with text. Defaults to "".
+        text (str, optional): the text to replace the message. Defaults to "Welcome to the Bot".
+        buttons (list[list[tuple[str,str]]], optional): Buttons to attach with message. Defaults to main_inline_buttons.
+    """
+    inline_keyboard  = [[{
         'text': button_text,
         'callback_data': callback_data
     } for button_text, callback_data in row] for row in buttons]

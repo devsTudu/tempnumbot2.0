@@ -1,6 +1,6 @@
 from logging import log
-from secrets_handler import VARIABLES
 import datetime
+import os
 
 from sqlalchemy import (
     create_engine,
@@ -37,16 +37,6 @@ class Transaction(Base):
     transaction_detail = Column(Text)
     transaction_date = Column(TIMESTAMP, default=datetime.datetime.now())
     amount_credited = Column(Float)
-
-
-class Service(Base):
-    __tablename__ = "services"
-
-    service_id = Column(Integer, primary_key=True)
-    service_name = Column(Text, unique=True)
-    price = Column(Float)
-    service_code = Column(Text, unique=True)
-
 
 class Recharges(Base):
     __tablename__ = "recharge_list"
@@ -190,7 +180,14 @@ class UserDatabase:
 class api_point:
     def __init__(self) -> None:
         try:
-            postgreurl = VARIABLES["POSTGRESQL_DB"]
+            try:
+                from secrets_handler import VARIABLES
+                postgreurl = VARIABLES["POSTGRESQL_DB"]
+            except :
+                from dotenv import load_dotenv
+                load_dotenv()
+                postgreurl:str|None = os.environ.get('POSTGRESQL_DB')
+            
             self.user_db = UserDatabase(postgreurl)
         except BaseException as e:
             log(1, "Error Connecting with database")
@@ -200,9 +197,9 @@ class api_point:
         return self.user_db.get_all_data_today_and_overall()
 
     def see_balance(self, user_id) -> float:
-        return float(self.user_db.get_user_balance(user_id))
+        return float(self.user_db.get_user_balance(user_id)) # type: ignore
 
-    def add_balance(self, user_id, amount) -> bool:
+    def add_balance(self, user_id, amount) -> bool|None:
         try:
             self.user_db.record_transaction(user_id, 'Recharge', amount)
         except Exception:
@@ -251,7 +248,7 @@ def test_debasish():
 
     # Check Recharge
     old_bal = reception_1.see_balance(myid)
-    reception_1.record_recharge(user_id=myid, amount=10)
+    reception_1.record_recharge(user_id=myid, amount=10,utr=9876543216)
     new_bal = reception_1.see_balance(myid)
     assert old_bal + 10 == new_bal
 
@@ -269,4 +266,4 @@ def test_report():
 
 
 if __name__ == '__main__':
-    test_debasish()
+    test_report()
