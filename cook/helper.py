@@ -2,6 +2,7 @@ from abc import abstractmethod, ABC
 
 from .models import (offers, phone_detail, serviceInfo, SERVERS, priceResponse, countryInfo)
 from .tools import (commonTools, BASE_URL, TOKENS,)
+from telegram.bot import logger
 
 tools = commonTools()
 
@@ -453,6 +454,9 @@ class api_requests():
     def get_balance(self, serverName: SERVERS):
         server = self.server[serverName]
         bal = server.get_balance()
+        if not isinstance(bal,float):
+            bal = -9.99
+            logger.error(f"Failed to fetch server balance at {serverName}")
         return {serverName: bal}
 
     def getPricesFromName(self, serviceName: str):
@@ -461,15 +465,27 @@ class api_requests():
             return "Service not found"
 
         lis = []
+        error_price = lambda server: logger.error(f"Error in getting price from {server} for {service_info.name}")
         if service_info.bowerCode:
-            lis += self.bower.get_prices(service_info.bowerCode)
+            try:
+                lis += self.bower.get_prices(service_info.bowerCode)
+            except:
+                error_price('Bower')
         if service_info.tigerCode:
-            lis += self.tiger.get_prices(service_info.tigerCode)
+            try:
+                lis += self.tiger.get_prices(service_info.tigerCode)
+            except:
+                error_price('Tiger')
         if service_info.fastCode:
-            lis += self.fast.get_prices(service_info.fastCode)
+            try:
+                lis += self.fast.get_prices(service_info.fastCode)
+            except:
+                error_price('Fast')
         if service_info.fiveCode:
-            lis += self.five.get_prices(service_info.fiveCode)
-
+            try:
+                lis += self.five.get_prices(service_info.fiveCode)
+            except:
+                error_price('5Sim')
         return priceResponse(service=service_info, offers=lis)
 
     def getPhoneFromName(self, server_name: SERVERS,

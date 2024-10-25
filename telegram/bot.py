@@ -8,6 +8,7 @@ logger = logging.getLogger("Bot_logger")
 class TelegramBot:
     def __init__(self, token):
         self.base_url = f"https://api.telegram.org/bot{token}/"
+        self.send_message('890642031',"Bot Started")
 
     def send_request(self, method, data):
         url = self.base_url + method
@@ -43,5 +44,12 @@ class TelegramBot:
 
             return requests.post(self.base_url + 'sendPhoto', files=files)
 
-
-bot = TelegramBot(VARIABLES['BOT_TOKEN'])
+try:
+    token = VARIABLES['BOT_TOKEN']
+except:
+    from dotenv import load_dotenv
+    from os import getenv
+    load_dotenv()
+    token=getenv('BOT_TOKEN')
+    
+bot = TelegramBot(token)
