@@ -81,9 +81,8 @@ class UserDatabase:
                 amount_credited=amount_credited,
             )
             session.add(transaction)
-            user = session.query(User).filter_by(userid=user_id).first()
-            user.balance += amount_credited
             session.commit()
+            
 
     def add_service(self, service_name, price, service_code):
         with self.Session() as session:
@@ -216,7 +215,8 @@ class api_point:
             log(
                 2, f"Unable to record txns {user_id, transaction_detail, credit_to_user}"
             )
-            print(e)
+            if 'Low balance' in str(e):
+                return "You are running with low balance"
             return False
 
     def see_transactions(self, user_id):
@@ -255,7 +255,7 @@ def test_debasish():
     # Check Transactions
     reception_1.add_orders(myid, "A Test Transaction", 12)
     new_bal = reception_1.see_balance(myid)
-    assert new_bal == old_bal - 2
+    assert new_bal == old_bal - 12
     print(reception_1.see_transactions(myid))
 
 
@@ -266,4 +266,4 @@ def test_report():
 
 
 if __name__ == '__main__':
-    test_report()
+    test_debasish()
