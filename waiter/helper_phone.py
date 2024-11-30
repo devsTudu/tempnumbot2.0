@@ -23,7 +23,11 @@ def showAvailableServer(service_code, update: Message,service_name=''):
 def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float,
                          s_actCode,server,provider):
     
-    reception_api.add_orders(chat_id,s_name,-abs(s_price))
+    resp = reception_api.add_orders(chat_id,s_name,-abs(s_price))
+    if 'low' in resp:
+        return bot.send_message(chat_id,"You are running with low balance, sorry")
+    if not resp:
+        return bot.send_message(chat_id,"There was some issue, no money deducted you can try again")
     response = f"here is your {str(s_phone)[:-10]} `{str(s_phone)[-10:]}` for {s_name}\n"
     logger.log(
         2, f"Phone for {user_firstName}({chat_id}) generated for {s_name}")
@@ -38,7 +42,7 @@ def sendMessageforNumber(chat_id, user_firstName, s_phone, s_name, s_price:float
         'reply_markup': json.dumps({'inline_keyboard': inline_button}),
         "parse_mode": "Markdown"
     }
-    print(payload)
+    # print(payload)
     return bot.send_request('sendMessage',payload)
 
 # Come and use this function
@@ -50,10 +54,10 @@ def requestNumber(server,service_name,provider, chat_id, user_firstName):
         # The price when it fails to get the actual price
         logger.error("Failed getting number for " + service_name)
         resp = f"Sorry there was an issue getting your number for {service_name}"
-        bot.send_message(chat_id,resp+"\nTry other servers or try again after")
-        return         
+        return bot.send_message(chat_id,resp+"\nTry other servers or try again later")
+                
     user_balance = float(reception_api.see_balance(user_id=chat_id))
-    if user_balance < float(s_price):
+    if user_balance - float(s_price) < 0 :
         resp = f"Sorry {user_firstName}, your balance is {user_balance:.2f}, and the price for this service is {s_price}"
         bot.send_message(chat_id, resp)
         return BalanceHandler().openPortal(user_id=chat_id)
